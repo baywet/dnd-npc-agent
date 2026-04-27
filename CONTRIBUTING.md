@@ -1,5 +1,15 @@
 # Contributing
 
+## Code Formatting
+
+Before committing any changes, run **dotnet format** to ensure consistent code style:
+
+```bash
+dotnet format
+```
+
+Copilot will run `dotnet format` before creating any commit to ensure all code adheres to the project's formatting standards.
+
 ## Commit Messages
 
 When instructed to commit changes, Copilot will use **conventional commits** for commit messages. This ensures consistent, semantic commit messages that are easy to parse and understand.
@@ -31,4 +41,7 @@ to maintain context across multiple interactions.
 Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 ```
 
-When you ask Copilot to commit your changes, it will automatically analyze the diff, determine the appropriate type and scope, and generate a descriptive conventional commit message.
+When you ask Copilot to commit your changes, it will:
+1. Run `dotnet format` to format all code
+2. Automatically analyze the diff to determine the appropriate type and scope
+3. Generate a descriptive conventional commit message
