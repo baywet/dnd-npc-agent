@@ -10,6 +10,12 @@ Before getting started, ensure you have the following installed:
   azd extension install azure.ai.agents
   ```
 
+## Region Availability
+
+Azure Foundry hosted agents are only available in specific regions. Before creating or deploying your project, ensure you are using a supported region.
+
+See [Region Availability](https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/hosted-agents#region-availability) in the official Azure Foundry documentation for the complete list of supported regions.
+
 ## Creating a New Project
 
 ### Step 1: Initialize the Agent Project
