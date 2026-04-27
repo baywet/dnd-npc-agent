@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/local-tools/local-tools.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/local-tools.tests.csproj" />
+  </Folder>
 </Solution>
