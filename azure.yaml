@@ -19,12 +19,12 @@ services:
             deployments:
                 - model:
                     format: OpenAI
-                    name: gpt-5.2
-                    version: "2025-12-11"
-                  name: gpt-5.2
+                    name: gpt-4.1-mini
+                    version: "2025-04-14"
+                  name: gpt-4.1-mini
                   sku:
-                    capacity: 250
-                    name: GlobalStandard
+                    capacity: 300
+                    name: GlobalProvisionedManaged
             startupCommand: dotnet run
 infra:
     provider: bicep
