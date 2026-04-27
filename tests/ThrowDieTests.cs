@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace local_tools.tests;
 
 public class ThrowDieTests
@@ -12,7 +14,7 @@ public class ThrowDieTests
             Assert.Contains("🎲", result);
             Assert.Matches(@"\*\*(\d+)\*\*", result);
             
-            var numberMatch = System.Text.RegularExpressions.Regex.Match(result, @"\*\*(\d+)\*\*");
+            var numberMatch = Regex.Match(result, @"\*\*(\d+)\*\*");
             int rollResult = int.Parse(numberMatch.Groups[1].Value);
             Assert.InRange(rollResult, 1, 20);
         }
@@ -27,7 +29,7 @@ public class ThrowDieTests
             Assert.Contains("d6", result);
             Assert.Contains("🎲", result);
             
-            var numberMatch = System.Text.RegularExpressions.Regex.Match(result, @"\*\*(\d+)\*\*");
+            var numberMatch = Regex.Match(result, @"\*\*(\d+)\*\*");
             int rollResult = int.Parse(numberMatch.Groups[1].Value);
             Assert.InRange(rollResult, 1, 6);
         }
@@ -52,7 +54,7 @@ public class ThrowDieTests
         var result = ThrowDie(sides);
         Assert.Contains($"d{sides}", result);
         
-        var numberMatch = System.Text.RegularExpressions.Regex.Match(result, @"\*\*(\d+)\*\*");
+        var numberMatch = Regex.Match(result, @"\*\*(\d+)\*\*");
         int rollResult = int.Parse(numberMatch.Groups[1].Value);
         Assert.InRange(rollResult, 1, sides);
     }
