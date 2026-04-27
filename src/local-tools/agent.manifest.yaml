@@ -1,9 +1,9 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/AgentSchema/refs/heads/main/schemas/v1.0/AgentManifest.yaml
-name: local-tools
-displayName: "Local Tools Agent"
+name: dnd-npc-agent
+displayName: "D&D NPC Agent"
 
 description: >
-  A travel assistant agent with local C# function tools for hotel search in Seattle.
+  A Dungeons and Dragons NPC agent that helps make play sessions more interactive by animating Non-Playable-Characters with local C# function tools.
 
 metadata:
   tags:
@@ -12,9 +12,11 @@ metadata:
     - Responses Protocol
     - Agent Framework
     - Local Tools
+    - D&D
+    - NPC Animation
 
 template:
-  name: local-tools
+  name: dnd-npc-agent
   kind: hosted
   protocols:
     - protocol: responses

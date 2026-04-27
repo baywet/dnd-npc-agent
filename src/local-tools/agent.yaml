@@ -1,9 +1,9 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/AgentSchema/refs/heads/main/schemas/v1.0/ContainerAgent.yaml
 
 kind: hosted
-name: local-tools
+name: dnd-npc-agent
 description: |
-    A travel assistant agent with local C# function tools for hotel search in Seattle.
+    A Dungeons and Dragons NPC agent that helps make play sessions more interactive by animating Non-Playable-Characters.
 metadata:
     tags:
         - AI Agent Hosting
@@ -11,6 +11,8 @@ metadata:
         - Responses Protocol
         - Agent Framework
         - Local Tools
+        - D&D
+        - NPC Animation
 protocols:
     - protocol: responses
       version: 1.0.0

@@ -18,16 +18,17 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
     .AsAIAgent(
         model: deployment,
         instructions: """
-            You are a helpful Seattle hotel concierge assistant.
-            Use the available tools to help customers find hotels in Seattle.
-            Provide detailed information about available hotels when asked.
+            You are an animator of Non-Playable-Characters (NPCs) for Dungeons and Dragons play sessions.
+            Your role is to bring NPCs to life by providing engaging dialogue, personality, and reactions.
+            Use the available die-rolling tool to resolve uncertain outcomes and add randomness to interactions.
+            Make the game more interactive and fun for all players.
             """,
-        name: "local-tools",
-        description: "A hotel concierge assistant with local function tools",
+        name: "dnd-npc-agent",
+        description: "A D&D NPC agent that animates Non-Playable-Characters with die rolling capabilities",
         tools:
         [
-            AIFunctionFactory.Create(GetAvailableHotels, "GetAvailableHotels",
-                "Gets a list of available hotels in Seattle with details about amenities and pricing.")
+            AIFunctionFactory.Create(ThrowDie, "ThrowDie",
+                "Throws a die and returns the result. Specify the number of sides on the die (e.g., 20 for d20, 6 for d6).")
         ]);
 
 var builder = AgentHost.CreateBuilder(args);
@@ -37,74 +38,13 @@ builder.RegisterProtocol("responses", endpoints => endpoints.MapFoundryResponses
 var app = builder.Build();
 app.Run();
 
-static string GetAvailableHotels(string? checkInDate = null, string? checkOutDate = null, int? guests = null)
+static string ThrowDie(int sides = 20)
 {
-    var hotels = new[]
-    {
-        new
-        {
-            Name = "The Grand Seattle",
-            Location = "Downtown Seattle",
-            PricePerNight = 289,
-            Rating = 4.7,
-            Amenities = new[] { "Free WiFi", "Pool", "Spa", "Restaurant", "Fitness Center" },
-            AvailableRooms = 12
-        },
-        new
-        {
-            Name = "Pike Place Inn",
-            Location = "Near Pike Place Market",
-            PricePerNight = 199,
-            Rating = 4.5,
-            Amenities = new[] { "Free WiFi", "Breakfast Included", "Rooftop Bar" },
-            AvailableRooms = 8
-        },
-        new
-        {
-            Name = "Space Needle View Hotel",
-            Location = "Queen Anne",
-            PricePerNight = 349,
-            Rating = 4.8,
-            Amenities = new[] { "Free WiFi", "Pool", "Restaurant", "Valet Parking", "Concierge Service" },
-            AvailableRooms = 5
-        },
-        new
-        {
-            Name = "Waterfront Lodge",
-            Location = "Seattle Waterfront",
-            PricePerNight = 159,
-            Rating = 4.3,
-            Amenities = new[] { "Free WiFi", "Pet Friendly", "Free Parking" },
-            AvailableRooms = 15
-        },
-        new
-        {
-            Name = "Capitol Hill Boutique",
-            Location = "Capitol Hill",
-            PricePerNight = 179,
-            Rating = 4.6,
-            Amenities = new[] { "Free WiFi", "Breakfast Included", "Fitness Center", "Local Art Gallery" },
-            AvailableRooms = 6
-        }
-    };
+    if (sides <= 0)
+        return "Error: Die must have at least 1 side.";
 
-    var result = "Available Hotels in Seattle:\n\n";
-    foreach (var hotel in hotels)
-    {
-        result += $"🏨 {hotel.Name}\n";
-        result += $"   📍 Location: {hotel.Location}\n";
-        result += $"   💰 Price: ${hotel.PricePerNight}/night\n";
-        result += $"   ⭐ Rating: {hotel.Rating}/5.0\n";
-        result += $"   🛏️ Available Rooms: {hotel.AvailableRooms}\n";
-        result += $"   ✨ Amenities: {string.Join(", ", hotel.Amenities)}\n\n";
-    }
+    var random = new Random();
+    int result = random.Next(1, sides + 1);
 
-    if (checkInDate != null)
-        result += $"Check-in: {checkInDate}\n";
-    if (checkOutDate != null)
-        result += $"Check-out: {checkOutDate}\n";
-    if (guests != null)
-        result += $"Guests: {guests}\n";
-
-    return result;
+    return $"🎲 Rolled a d{sides}: **{result}**";
 }
