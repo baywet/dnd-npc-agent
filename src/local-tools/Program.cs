@@ -23,7 +23,7 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
             Use the available die-rolling tool to resolve uncertain outcomes and add randomness to interactions.
             Make the game more interactive and fun for all players.
             """,
-        name: "dnd-npc-agent",
+        name: "dnd-npc-agent-north-central",
         description: "A D&D NPC agent that animates Non-Playable-Characters with die rolling capabilities",
         tools:
         [

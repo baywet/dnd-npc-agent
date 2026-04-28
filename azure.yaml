@@ -23,8 +23,8 @@ services:
                     version: "2025-04-14"
                   name: gpt-4.1-mini
                   sku:
-                    capacity: 300
-                    name: GlobalProvisionedManaged
+                    capacity: 10
+                    name: Standard
             startupCommand: dotnet run
 infra:
     provider: bicep
