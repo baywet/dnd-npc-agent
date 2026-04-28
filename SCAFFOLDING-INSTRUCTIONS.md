@@ -29,10 +29,13 @@ For this demo environment:
 To create a new v2 hosted agent using Microsoft Agent Framework in .NET, run the following command:
 
 ```bash
-azd ai agent init -m https://github.com/microsoft/hosted-agents-vnext-private-preview/blob/main/samples/dotnet/hosted-agents/agent-framework/local-tools/agent.manifest.yaml
+azd ai agent init
 ```
 
-The `-m` parameter specifies the manifest file that defines the agent configuration and scaffolding template for the hosted agent framework.
+When prompted, select the following options from the public preview:
+- **Language**: C#
+- **Framework**: Agent Framework
+- **Template**: Local Tools
 
 This command will:
 - Create the project structure for a .NET-based hosted agent
