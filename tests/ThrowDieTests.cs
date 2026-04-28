@@ -21,6 +21,29 @@ public class ThrowDieTests
     }
 
     [Fact]
+    public void ThrowDie_WithModifier_IncludesModifierInNotation()
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            var result = ThrowDie(20, 6);
+            Assert.Contains("d20 + 6", result);
+            Assert.Contains("🎲", result);
+
+            var numberMatch = Regex.Match(result, @"\*\*(\d+)\*\*");
+            int rollResult = int.Parse(numberMatch.Groups[1].Value);
+            Assert.InRange(rollResult, 7, 26); // 1-20 + 6
+        }
+    }
+
+    [Fact]
+    public void ThrowDie_WithoutModifier_ExcludesModifierFromNotation()
+    {
+        var result = ThrowDie(20);
+        Assert.Contains("d20", result);
+        Assert.DoesNotContain("+", result);
+    }
+
+    [Fact]
     public void ThrowDie_WithCustomSides_ReturnsResultWithinRange()
     {
         for (int i = 0; i < 100; i++)
@@ -84,17 +107,20 @@ public class ThrowDieTests
     public void ThrowDie_Formatting_HasProperStructure()
     {
         var result = ThrowDie(20);
-        Assert.Matches(@"🎲 Rolled a d\d+: \*\*\d+\*\*", result);
+        Assert.Matches(@"🎲 Threw a d\d+: \*\*\d+\*\*", result);
     }
 
-    private static string ThrowDie(int sides = 20)
+    private static string ThrowDie(int sides = 20, int? modifier = null)
     {
         if (sides <= 0)
             return "Error: Die must have at least 1 side.";
 
         var random = new Random();
         int result = random.Next(1, sides + 1);
+        
+        string diceNotation = modifier.HasValue ? $"d{sides} + {modifier}" : $"d{sides}";
+        int finalResult = modifier.HasValue ? result + modifier.Value : result;
 
-        return $"🎲 Rolled a d{sides}: **{result}**";
+        return $"🎲 Threw a {diceNotation}: **{finalResult}**";
     }
 }

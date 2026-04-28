@@ -30,7 +30,7 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
         tools:
         [
             AIFunctionFactory.Create(ThrowDie, "ThrowDie",
-                "Throws a die and returns the result. Specify the number of sides on the die (e.g., 20 for d20, 6 for d6).")
+                "Throws a die and returns the result. Specify the number of sides on the die (e.g., 20 for d20, 6 for d6). Optionally add a modifier to be applied to the roll.")
         ]);
 
 var builder = AgentHost.CreateBuilder(args);
@@ -40,13 +40,16 @@ builder.RegisterProtocol("responses", endpoints => endpoints.MapFoundryResponses
 var app = builder.Build();
 app.Run();
 
-static string ThrowDie(int sides = 20)
+static string ThrowDie(int sides = 20, int? modifier = null)
 {
     if (sides <= 0)
         return "Error: Die must have at least 1 side.";
 
     var random = new Random();
     int result = random.Next(1, sides + 1);
+    
+    string diceNotation = modifier.HasValue ? $"d{sides} + {modifier}" : $"d{sides}";
+    int finalResult = modifier.HasValue ? result + modifier.Value : result;
 
-    return $"🎲 Rolled a d{sides}: **{result}**";
+    return $"🎲 Threw a {diceNotation}: **{finalResult}**";
 }
