@@ -16,6 +16,12 @@ Azure Foundry hosted agents are only available in specific regions. Before creat
 
 See [Region Availability](https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/hosted-agents#region-availability) in the official Azure Foundry documentation for the complete list of supported regions.
 
+## Demo Environment Configuration
+
+For this demo environment:
+- **Resource Group**: `rg-ai-project-dnd-npc-agent-john-cc-dev`
+- **Agent Name**: `local-tools`
+
 ## Creating a New Project
 
 ### Step 1: Initialize the Agent Project
