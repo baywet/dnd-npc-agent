@@ -5,7 +5,7 @@ requiredVersions:
         azure.ai.agents: '>=0.1.0-preview'
 name: ai-foundry-starter-basic
 services:
-    local-tools:
+    dnd-npc-agent-north-central:
         project: src/local-tools
         host: azure.ai.agent
         language: docker
