@@ -7,7 +7,7 @@ $body = @{
     input = "Say hello from the Responses API"
 } | ConvertTo-Json -Depth 5
 
-curl.exe -X POST `
+curl -X POST `
   "https://ai-account-maqq3xk3jj6ze.services.ai.azure.com/api/projects/ai-project-dnd-npc-agent-north-central-dev/openai/v1/responses" `
   -H "Authorization: Bearer $token" `
   -H "Content-Type: application/json" `
