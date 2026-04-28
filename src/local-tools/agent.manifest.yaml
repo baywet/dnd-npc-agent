@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/AgentSchema/refs/heads/main/schemas/v1.0/AgentManifest.yaml
-name: dnd-npc-agent-north-central
+name: local-tools
 displayName: "D&D NPC Agent"
 
 description: >
@@ -16,7 +16,7 @@ metadata:
     - NPC Animation
 
 template:
-  name: dnd-npc-agent-north-central
+  name: local-tools
   kind: hosted
   protocols:
     - protocol: responses

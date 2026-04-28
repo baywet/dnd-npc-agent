@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/AgentSchema/refs/heads/main/schemas/v1.0/ContainerAgent.yaml
 
 kind: hosted
-name: dnd-npc-agent-north-central
+name: local-tools
 description: |
     A Dungeons and Dragons NPC agent that helps make play sessions more interactive by animating Non-Playable-Characters.
 metadata:
@@ -21,4 +21,4 @@ resources:
     memory: 1Gi
 environment_variables:
     - name: AZURE_AI_MODEL_DEPLOYMENT_NAME
-      value: gpt-5.2
+      value: gpt-4o-mini
