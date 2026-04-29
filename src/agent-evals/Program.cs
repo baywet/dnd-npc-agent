@@ -2,6 +2,7 @@ using Azure.AI.Projects;
 using Azure.Identity;
 using DotNetEnv;
 using OpenAI.Evals;
+#pragma warning disable OPENAI001
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Text.Json;
@@ -72,22 +73,33 @@ object dataSourceConfig = new
     include_sample_schema = true
 };
 
-// Step 1: Create the evaluation definition
-Console.WriteLine("Creating evaluation definition...");
-var evaluationCreatePayload = BinaryData.FromObjectAsJson(new
+// Step 1: Find an existing evaluation by name, or create a new one
+const string evaluationDisplayName = "Character Sheet Requirement Evaluation";
+Console.WriteLine($"Looking up existing evaluation '{evaluationDisplayName}'...");
+
+var evaluationId = await FindEvaluationIdByNameAsync(evaluationClient, evaluationDisplayName);
+
+if (evaluationId is not null)
 {
-    name = "Character Sheet Requirement Evaluation",
-    data_source_config = dataSourceConfig,
-    testing_criteria = testingCriteria
-});
+    Console.WriteLine($"✓ Reusing existing evaluation (id: {evaluationId})\n");
+}
+else
+{
+    Console.WriteLine("No existing evaluation found, creating a new one...");
+    var evaluationCreatePayload = BinaryData.FromObjectAsJson(new
+    {
+        name = evaluationDisplayName,
+        data_source_config = dataSourceConfig,
+        testing_criteria = testingCriteria
+    });
 
-using var evaluationCreateContent = BinaryContent.Create(evaluationCreatePayload);
-ClientResult evaluationResult = await evaluationClient.CreateEvaluationAsync(evaluationCreateContent);
+    using var evaluationCreateContent = BinaryContent.Create(evaluationCreatePayload);
+    ClientResult evaluationResult = await evaluationClient.CreateEvaluationAsync(evaluationCreateContent);
 
-var evaluationJson = JsonDocument.Parse(evaluationResult.GetRawResponse().Content.ToString());
-var evaluationId = evaluationJson.RootElement.GetProperty("id").GetString()!;
-var evaluationName = evaluationJson.RootElement.GetProperty("name").GetString()!;
-Console.WriteLine($"✓ Evaluation created (id: {evaluationId}, name: {evaluationName})\n");
+    var evaluationJson = JsonDocument.Parse(evaluationResult.GetRawResponse().Content.ToString());
+    evaluationId = evaluationJson.RootElement.GetProperty("id").GetString()!;
+    Console.WriteLine($"✓ Evaluation created (id: {evaluationId})\n");
+}
 
 // Step 2: Create the evaluation run with the dataset
 Console.WriteLine($"Creating evaluation run with {testData.Count} test cases...");
@@ -155,6 +167,41 @@ Console.WriteLine($"\n✓ Evaluation finished with status: {runStatus}");
 if (!string.IsNullOrEmpty(reportUrl))
 {
     Console.WriteLine($"  View results: {reportUrl}");
+}
+
+static async Task<string?> FindEvaluationIdByNameAsync(EvaluationClient client, string name)
+{
+    string? after = null;
+    while (true)
+    {
+        ClientResult page = await client.GetEvaluationsAsync(
+            limit: 100,
+            orderBy: "created_at",
+            order: "asc",
+            after: after,
+            options: null);
+
+        var pageJson = JsonDocument.Parse(page.GetRawResponse().Content.ToString());
+        var root = pageJson.RootElement;
+
+        if (root.TryGetProperty("data", out var data))
+        {
+            foreach (var item in data.EnumerateArray())
+            {
+                if (item.TryGetProperty("name", out var nameProp)
+                    && string.Equals(nameProp.GetString(), name, StringComparison.Ordinal))
+                {
+                    return item.GetProperty("id").GetString();
+                }
+            }
+        }
+
+        var hasMore = root.TryGetProperty("has_more", out var hm) && hm.GetBoolean();
+        if (!hasMore) return null;
+
+        after = root.TryGetProperty("last_id", out var lastId) ? lastId.GetString() : null;
+        if (string.IsNullOrEmpty(after)) return null;
+    }
 }
 
 static List<TestCase> LoadDataset(string path)
