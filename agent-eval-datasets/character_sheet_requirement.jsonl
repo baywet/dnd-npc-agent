@@ -1,0 +1,90 @@
+{"query": "Hello! Can we start a D&D session?", "response": "Agent asks for character sheet before proceeding"}
+{"query": "Hi there!", "response": "Agent asks for character sheet before starting"}
+{"query": "I want to play D&D!", "response": "Agent asks for character sheet"}
+{"query": "Lets begin!", "response": "Agent asks for character sheet"}
+{"query": "Ready to go!", "response": "Agent asks for character sheet"}
+{"query": "What are my characters special abilities?", "response": "Agent asks for character sheet first"}
+{"query": "What abilities does my character have?", "response": "Agent asks for character sheet"}
+{"query": "Tell me about my characters powers", "response": "Agent asks for character sheet"}
+{"query": "What can my character do?", "response": "Agent asks for character sheet"}
+{"query": "What are my skills?", "response": "Agent asks for character sheet"}
+{"query": "I want to roll for initiative!", "response": "Agent asks for character sheet before combat"}
+{"query": "Can I attack?", "response": "Agent asks for character sheet"}
+{"query": "Im attacking the goblin!", "response": "Agent asks for character sheet"}
+{"query": "Lets fight!", "response": "Agent asks for character sheet"}
+{"query": "I want to fight", "response": "Agent asks for character sheet"}
+{"query": "My character is a rogue", "response": "Agent asks for complete character sheet"}
+{"query": "My character is elven", "response": "Agent asks for complete character sheet"}
+{"query": "Im a wizard", "response": "Agent asks for complete character sheet"}
+{"query": "Im level 5", "response": "Agent asks for complete character sheet"}
+{"query": "My name is Aragorn", "response": "Agent asks for complete character sheet"}
+{"query": "What are the best spells for a wizard?", "response": "Agent asks for character sheet"}
+{"query": "What spells can I cast?", "response": "Agent asks for character sheet"}
+{"query": "How many spell slots do I have?", "response": "Agent asks for character sheet"}
+{"query": "Can I cast fireball?", "response": "Agent asks for character sheet"}
+{"query": "What magic can I use?", "response": "Agent asks for character sheet"}
+{"query": "What weapons do I have?", "response": "Agent asks for character sheet"}
+{"query": "Can I use this sword?", "response": "Agent asks for character sheet"}
+{"query": "Whats my armor class?", "response": "Agent asks for character sheet"}
+{"query": "How much damage do I do?", "response": "Agent asks for character sheet"}
+{"query": "Whats my to-hit bonus?", "response": "Agent asks for character sheet"}
+{"query": "What are my ability scores?", "response": "Agent asks for character sheet"}
+{"query": "Whats my strength?", "response": "Agent asks for character sheet"}
+{"query": "Whats my intelligence modifier?", "response": "Agent asks for character sheet"}
+{"query": "How much HP do I have?", "response": "Agent asks for character sheet"}
+{"query": "Whats my wisdom?", "response": "Agent asks for character sheet"}
+{"query": "What is my dexterity?", "response": "Agent asks for character sheet"}
+{"query": "Whats my constitution?", "response": "Agent asks for character sheet"}
+{"query": "Whats my backstory?", "response": "Agent asks for character sheet"}
+{"query": "Whats my characters background?", "response": "Agent asks for character sheet"}
+{"query": "Who am I?", "response": "Agent asks for character sheet"}
+{"query": "Whats my motivation?", "response": "Agent asks for character sheet"}
+{"query": "Whats my class?", "response": "Agent asks for character sheet"}
+{"query": "What is my race?", "response": "Agent asks for character sheet"}
+{"query": "What is my alignment?", "response": "Agent asks for character sheet"}
+{"query": "Can I talk to the shopkeeper?", "response": "Agent asks for character sheet"}
+{"query": "I want to negotiate", "response": "Agent asks for character sheet"}
+{"query": "Can I persuade them?", "response": "Agent asks for character sheet"}
+{"query": "I want to deceive the guard", "response": "Agent asks for character sheet"}
+{"query": "Can I intimidate?", "response": "Agent asks for character sheet"}
+{"query": "I explore the room", "response": "Agent asks for character sheet"}
+{"query": "I search for traps", "response": "Agent asks for character sheet"}
+{"query": "Can I make a perception check?", "response": "Agent asks for character sheet"}
+{"query": "I want to climb", "response": "Agent asks for character sheet"}
+{"query": "Can I pick the lock?", "response": "Agent asks for character sheet"}
+{"query": "I want to hide", "response": "Agent asks for character sheet"}
+{"query": "What is my spell save DC?", "response": "Agent asks for character sheet"}
+{"query": "Can I counterspell?", "response": "Agent asks for character sheet"}
+{"query": "What is my spellcasting ability?", "response": "Agent asks for character sheet"}
+{"query": "Do I know any healing spells?", "response": "Agent asks for character sheet"}
+{"query": "What cantrips do I know?", "response": "Agent asks for character sheet"}
+{"query": "Do I have a shield?", "response": "Agent asks for character sheet"}
+{"query": "What is my proficiency bonus?", "response": "Agent asks for character sheet"}
+{"query": "Can I use a crossbow?", "response": "Agent asks for character sheet"}
+{"query": "What feats do I have?", "response": "Agent asks for character sheet"}
+{"query": "List my abilities", "response": "Agent asks for character sheet"}
+{"query": "What moves do I have?", "response": "Agent asks for character sheet"}
+{"query": "Show my abilities", "response": "Agent asks for character sheet"}
+{"query": "Do I have any special powers?", "response": "Agent asks for character sheet"}
+{"query": "Strike the enemy!", "response": "Agent asks for character sheet"}
+{"query": "I cast magic missile!", "response": "Agent asks for character sheet"}
+{"query": "Swing my weapon!", "response": "Agent asks for character sheet"}
+{"query": "Can I dodge?", "response": "Agent asks for character sheet"}
+{"query": "I defend!", "response": "Agent asks for character sheet"}
+{"query": "I have 20 hit points", "response": "Agent asks for character sheet"}
+{"query": "My armor class is 14", "response": "Agent asks for character sheet"}
+{"query": "I can cast spells", "response": "Agent asks for character sheet"}
+{"query": "I have a sword", "response": "Agent asks for character sheet"}
+{"query": "I speak elvish", "response": "Agent asks for character sheet"}
+{"query": "What this the capital of France", "response": "Agent asks for character sheet before answering"}
+{"query": "Tell me a joke", "response": "Agent asks for character sheet before proceeding"}
+{"query": "What time is it?", "response": "Agent asks for character sheet"}
+{"query": "What are the rules of D&D?", "response": "Agent asks for character sheet"}
+{"query": "How do I win?", "response": "Agent asks for character sheet"}
+{"query": "What else?", "response": "Agent asks for character sheet"}
+{"query": "What else?", "response": "Agent asks for character sheet"}
+{"query": "What else?", "response": "Agent asks for character sheet"}
+{"query": "What else?", "response": "Agent asks for character sheet"}
+{"query": "What else?", "response": "Agent asks for character sheet"}
+{"query": "What else?", "response": "Agent asks for character sheet"}
+{"query": "What else?", "response": "Agent asks for character sheet"}

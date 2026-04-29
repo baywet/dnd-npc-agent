@@ -16,6 +16,22 @@
                 "FOUNDRY_PROJECT_ENDPOINT": "https://ai-account-3phirl5w4q3ks.services.ai.azure.com/api/projects/ai-project-ai-project-dnd-npc-agent-john-cc-dev"
             },
             "envFile": "${workspaceFolder}/.azure/ai-project-dnd-npc-agent-john-cc-dev/.env"
+        },
+        {
+            "name": "Agent Evaluations (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/src/agent-evals/bin/Debug/net10.0/agent-evals.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "env": {
+                "DOTNET_ENVIRONMENT": "Development",
+                "FOUNDRY_PROJECT_ENDPOINT": "https://ai-account-3phirl5w4q3ks.services.ai.azure.com/api/projects/ai-project-ai-project-dnd-npc-agent-john-cc-dev"
+            },
+            "envFile": "${workspaceFolder}/.azure/ai-project-dnd-npc-agent-john-cc-dev/.env"
         }
     ]
 }

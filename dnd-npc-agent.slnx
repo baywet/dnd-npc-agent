@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/local-tools/local-tools.csproj" />
+    <Project Path="src/agent-evals/agent-evals.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/local-tools.tests.csproj" />
