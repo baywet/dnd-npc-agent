@@ -14,4 +14,15 @@
     <PackageReference Include="Azure.ResourceManager.CognitiveServices" Version="1.5.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="data\dnd_npc_data_train.jsonl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>data\dnd_npc_data_train.jsonl</Link>
+    </Content>
+    <Content Include="data\dnd_npc_data_valid.jsonl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>data\dnd_npc_data_valid.jsonl</Link>
+    </Content>
+  </ItemGroup>
+
 </Project>

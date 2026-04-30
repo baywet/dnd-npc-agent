@@ -9,15 +9,14 @@ using OpenAI.FineTuning;
 using Azure.ResourceManager;
 using Azure.ResourceManager.CognitiveServices;
 using Azure.ResourceManager.CognitiveServices.Models;
-using System.Runtime.CompilerServices;
 
 #pragma warning disable OPENAI001
 
 // Load environment variables from .env file
 Env.TraversePath().Load();
 
-string trainingFilePath = Environment.GetEnvironmentVariable("TRAINING_FILE_PATH") ?? "data/dnd_npc_data_train.jsonl";
-string validationFilePath = Environment.GetEnvironmentVariable("VALIDATION_FILE_PATH") ?? "data/dnd_npc_data_valid.jsonl";
+string trainingFilePath = Path.Combine(AppContext.BaseDirectory, "data", "dnd_npc_data_train.jsonl");
+string validationFilePath = Path.Combine(AppContext.BaseDirectory, "data", "dnd_npc_data_valid.jsonl");
 string subscriptionID = Environment.GetEnvironmentVariable("AZURE_SUBSCRIPTION_ID") ?? throw new InvalidOperationException("AZURE_SUBSCRIPTION_ID environment variable is not set.");
 string resourceGroup = Environment.GetEnvironmentVariable("AZURE_RESOURCE_GROUP") ?? throw new InvalidOperationException("AZURE_RESOURCE_GROUP environment variable is not set.");
 string foundryName = Environment.GetEnvironmentVariable("AZURE_AI_ACCOUNT_NAME") ?? throw new InvalidOperationException("AZURE_AI_ACCOUNT_NAME environment variable is not set.");
@@ -117,10 +116,6 @@ Console.WriteLine("Model deployment has completed!");
 // Upload file
 async static Task<OpenAIFile> UploadFile(ProjectFilesClient fileClient, string path)
 {
-    if (path.StartsWith("data"))
-    {
-        path = GetFile(Path.Combine([path]));
-    }
     using FileStream trainStream = System.IO.File.OpenRead(path);
     OpenAIFile file = await fileClient.UploadFileAsync(
                 trainStream,
@@ -137,12 +132,5 @@ async static Task<OpenAIFile> UploadFile(ProjectFilesClient fileClient, string p
             $"File {file.Id} processing failed: {file.StatusDetails}");
     }
     return file;
-}
-
-// Get the file, which can be located at source codes.
-static string GetFile(string fileName, [CallerFilePath] string pth = "")
-{
-    var dirName = Path.GetDirectoryName(pth) ?? "";
-    return Path.Combine([dirName, fileName]);
 }
 #endregion
