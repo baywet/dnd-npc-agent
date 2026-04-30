@@ -8,8 +8,24 @@ Before running the demo, ensure you have the following installed:
 - **Visual Studio Code** - Recommended code editor
 - **Azure Developer CLI (azd)** - Required for deployment and management
 - **azd AI Agent Extension** - Install with `azd extension install azure.ai.agents`
+- **Azure CLI (az)** - Required so `DefaultAzureCredential` can authenticate the local programs (agent host, evals, fine-tuning) against the backend APIs
 - **Windows Terminal** - Recommended terminal application
 - **PowerShell 7+** - Required for running scripts
+
+### Install with winget
+
+Run the following from an elevated PowerShell session to install all prerequisites:
+
+```powershell
+sudo winget install --id Microsoft.PowerShell
+sudo winget install --id Microsoft.VisualStudioCode
+sudo winget install --id Microsoft.Azd
+sudo winget install --id Microsoft.AzureCli
+sudo winget install --id Microsoft.WindowsTerminal
+sudo winget install --id Microsoft.DotNet.SDK.10
+
+azd extension install azure.ai.agents
+```
 
 > [!WARNING]
 > **Refresh fine-tuning and evaluation artifacts at most one week before the session.**
@@ -20,9 +36,10 @@ Before running the demo, ensure you have the following installed:
 
 Before starting the demo, prepare your environment:
 
-1. **Sign in to Azure** - Ensure `azd` is signed in to your corporate identity:
+1. **Sign in to Azure** - Ensure both `azd` and the Azure CLI are signed in to your corporate identity (the Azure CLI sign-in is what `DefaultAzureCredential` picks up at runtime to call the backend APIs):
    ```bash
    azd auth login
+   az login
    ```
 
 2. **Open Terminal** - Open Windows Terminal and navigate to this repository directory
