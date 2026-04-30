@@ -3,6 +3,7 @@
 using Azure.AI.Extensions.OpenAI;
 using Azure.AI.Projects;
 using Azure.Identity;
+using DotNetEnv;
 using OpenAI.Files;
 using OpenAI.FineTuning;
 using Azure.ResourceManager;
@@ -11,6 +12,9 @@ using Azure.ResourceManager.CognitiveServices.Models;
 using System.Runtime.CompilerServices;
 
 #pragma warning disable OPENAI001
+
+// Load environment variables from .env file
+Env.TraversePath().Load();
 
 string trainingFilePath = Environment.GetEnvironmentVariable("TRAINING_FILE_PATH") ?? "data/dnd_npc_data_train.jsonl";
 string validationFilePath = Environment.GetEnvironmentVariable("VALIDATION_FILE_PATH") ?? "data/dnd_npc_data_valid.jsonl";
