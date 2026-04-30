@@ -32,6 +32,38 @@ azd extension install azure.ai.agents
 > Microsoft Foundry does not document a fixed retention for fine-tuning jobs, custom models, uploaded training/validation files, or evaluation runs — they generally persist until you delete them. However, **fine-tuned model deployments are automatically deleted after 15 consecutive days of inactivity** (no chat/response API calls), and individual artifacts can still be cleaned up by service-side maintenance or by other people sharing the project.
 > To avoid an embarrassing "the deployment is gone" or "the eval results are missing" moment on stage, **re-run all fine-tuning and evaluation jobs no more than one week before the actual session** so you walk in with fresh, guaranteed-present results.
 
+## Creating the Demonstration Data
+
+> [!IMPORTANT]
+> Plan ahead — the full sequence takes **~4 hours end to end** (mostly fine-tuning). The two evaluation runs can be executed in parallel from separate terminals to save time.
+
+1. **Provision Foundry & deploy the faulty agent** — checkout the buggy branch and deploy if no environment exists yet:
+   ```bash
+   git checkout bug/missing-character-sheet-instructions
+   azd up
+   ```
+2. **Run the agent evaluation (faulty version)** — F5 the `agent-evals` project in VS Code, or:
+   ```bash
+   dotnet run --project src/agent-evals
+   ```
+3. **Deploy the fixed agent** — switch back and redeploy:
+   ```bash
+   git checkout main
+   azd deploy
+   ```
+4. **Run the agent evaluation (fixed version)** — same as step 2 (`dotnet run --project src/agent-evals`).
+5. **Run the model fine-tuning** — F5 the `model-finetuning` project, or:
+   ```bash
+   dotnet run --project src/model-finetuning
+   ```
+6. **Run the model evaluation** — F5 the `model-eval` project, or:
+   ```bash
+   dotnet run --project src/model-eval
+   ```
+
+> [!TIP]
+> Steps 4 and 5 (or 5 and 6) can run concurrently in separate terminals.
+
 ## Getting Ready
 
 Before starting the demo, prepare your environment:
