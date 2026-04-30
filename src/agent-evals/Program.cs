@@ -16,11 +16,17 @@ var projectEndpoint = new Uri(Environment.GetEnvironmentVariable("FOUNDRY_PROJEC
 var deploymentName = Environment.GetEnvironmentVariable("AZURE_AI_MODEL_DEPLOYMENT_NAME")
     ?? throw new InvalidOperationException("AZURE_AI_MODEL_DEPLOYMENT_NAME not set");
 
+var agentName = Environment.GetEnvironmentVariable("AGENT_LOCAL_TOOLS_NAME")
+    ?? throw new InvalidOperationException("AGENT_LOCAL_TOOLS_NAME not set");
+
+var agentVersion = Environment.GetEnvironmentVariable("AGENT_LOCAL_TOOLS_VERSION");
+
 var datasetPath = Path.Combine(AppContext.BaseDirectory, "datasets", "character_sheet_requirement.jsonl");
 
 Console.WriteLine("=== D&D NPC Agent Evaluation ===\n");
 Console.WriteLine($"Project: {projectEndpoint}");
-Console.WriteLine($"Deployment: {deploymentName}");
+Console.WriteLine($"Deployment (for evaluators): {deploymentName}");
+Console.WriteLine($"Agent: {agentName}{(string.IsNullOrEmpty(agentVersion) ? "" : $" (version {agentVersion})")}");
 Console.WriteLine($"Dataset: {datasetPath}\n");
 
 // Initialize Foundry client
@@ -113,8 +119,7 @@ var runCreatePayload = BinaryData.FromObjectAsJson(new
     name = $"character-sheet-run-{DateTime.UtcNow:yyyyMMddHHmmss}",
     data_source = new
     {
-        type = "completions",
-        model = deploymentName,
+        type = "azure_ai_target_completions",
         source = new
         {
             type = "file_content",
@@ -132,7 +137,10 @@ var runCreatePayload = BinaryData.FromObjectAsJson(new
                     content = new { type = "input_text", text = "{{item.query}}" }
                 }
             }
-        }
+        },
+        target = string.IsNullOrEmpty(agentVersion)
+            ? (object)new { type = "azure_ai_agent", name = agentName }
+            : new { type = "azure_ai_agent", name = agentName, version = agentVersion }
     }
 });
 
