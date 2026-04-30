@@ -117,7 +117,7 @@ public class ThrowDieTests
 
         var random = new Random();
         int result = random.Next(1, sides + 1);
-        
+
         string diceNotation = modifier.HasValue ? $"d{sides} + {modifier}" : $"d{sides}";
         int finalResult = modifier.HasValue ? result + modifier.Value : result;
 
