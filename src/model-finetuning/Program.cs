@@ -24,7 +24,7 @@ var modelDeploymentName = Environment.GetEnvironmentVariable("FOUNDRY_MODEL_NAME
 var completedJob = Environment.GetEnvironmentVariable("COMPLETED_JOB");
 DefaultAzureCredential credential = new();
 
-AIProjectClient projectClient = new (new Uri(endpoint), credential);
+AIProjectClient projectClient = new(new Uri(endpoint), credential);
 ProjectFilesClient fileClient = projectClient.ProjectOpenAIClient.GetProjectFilesClient();
 FineTuningClient fineTuningClient = projectClient.ProjectOpenAIClient.GetFineTuningClient();
 FineTuningJob fineTuningJob;
