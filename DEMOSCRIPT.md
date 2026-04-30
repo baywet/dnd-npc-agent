@@ -11,6 +11,11 @@ Before running the demo, ensure you have the following installed:
 - **Windows Terminal** - Recommended terminal application
 - **PowerShell 7+** - Required for running scripts
 
+> [!WARNING]
+> **Refresh fine-tuning and evaluation artifacts at most one week before the session.**
+> Microsoft Foundry does not document a fixed retention for fine-tuning jobs, custom models, uploaded training/validation files, or evaluation runs — they generally persist until you delete them. However, **fine-tuned model deployments are automatically deleted after 15 consecutive days of inactivity** (no chat/response API calls), and individual artifacts can still be cleaned up by service-side maintenance or by other people sharing the project.
+> To avoid an embarrassing "the deployment is gone" or "the eval results are missing" moment on stage, **re-run all fine-tuning and evaluation jobs no more than one week before the actual session** so you walk in with fresh, guaranteed-present results.
+
 ## Getting Ready
 
 Before starting the demo, prepare your environment:
