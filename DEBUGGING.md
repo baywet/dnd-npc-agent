@@ -79,6 +79,7 @@ Always run from the workspace root (matches `cwd` in `launch.json`):
 | `.NET Core Launch (console)` | `dotnet run --project src/local-tools`          |
 | `Agent Evaluations (console)`| `dotnet run --project src/agent-evals`          |
 | `Model Fine-tuning (console)`| `dotnet run --project src/model-finetuning`     |
+| `Model Evaluation (console)` | `dotnet run --project src/model-eval`           |
 
 To attach a debugger from the CLI, add `--configuration Debug` (the default) and use `dotnet run -- --debug` patterns or `vsdbg` / `dotnet-dump` as needed.
 
@@ -88,4 +89,4 @@ If a project throws `InvalidOperationException: <VAR> environment variable is no
 
 - You launched from the workspace root (`pwd` / `Get-Location` should print the repo root).
 - `.env` exists at the workspace root (check with `ls -la .env` / `Get-Item .env`).
-- Required keys for the project you're running are present (`FOUNDRY_PROJECT_ENDPOINT`, `AZURE_AI_MODEL_DEPLOYMENT_NAME`, `AGENT_LOCAL_TOOLS_NAME` for `agent-evals`; `AZURE_SUBSCRIPTION_ID`, `AZURE_RESOURCE_GROUP`, `AZURE_AI_ACCOUNT_NAME` for `model-finetuning`).
+- Required keys for the project you're running are present (`FOUNDRY_PROJECT_ENDPOINT`, `AZURE_AI_MODEL_DEPLOYMENT_NAME`, `AGENT_LOCAL_TOOLS_NAME` for `agent-evals`; `AZURE_SUBSCRIPTION_ID`, `AZURE_RESOURCE_GROUP`, `AZURE_AI_ACCOUNT_NAME` for `model-finetuning`; `FOUNDRY_PROJECT_ENDPOINT`, `AZURE_AI_MODEL_DEPLOYMENT_NAME`, `BASE_MODEL_DEPLOYMENT_NAME`, `FINE_TUNED_MODEL_DEPLOYMENT_NAME` for `model-eval`).
