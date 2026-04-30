@@ -10,8 +10,6 @@ using Azure.ResourceManager;
 using Azure.ResourceManager.CognitiveServices;
 using Azure.ResourceManager.CognitiveServices.Models;
 using System.ClientModel;
-using System.ClientModel.Primitives;
-using System.Runtime.CompilerServices;
 
 #pragma warning disable OPENAI001
 
@@ -144,7 +142,7 @@ async static Task<OpenAIFile> UploadFile(ProjectFilesClient fileClient, string p
                 FileUploadPurpose.FineTune);
     while (file.Status != FileStatus.Processed && file.Status != FileStatus.Error)
     {
-        await Task.Delay(2);
+        await Task.Delay(TimeSpan.FromSeconds(2));
         file = await fileClient.GetFileAsync(file.Id);
     }
     if (file.Status == FileStatus.Error)
