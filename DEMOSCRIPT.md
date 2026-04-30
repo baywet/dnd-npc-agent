@@ -117,3 +117,21 @@ Before starting the demo, prepare your environment:
 1. Show that the answer is now grounded in the stat block (correct AC, in-character decision).
 1. Conclude: this is exactly the kind of regression we want to catch automatically — next we'll build evaluations to guarantee the agent always asks for the character sheet first.
 
+### Programmatic agent evaluations
+
+1. Open `src/agent-evals/Program.cs`.
+1. Open `agent-eval-datasets/character_sheet_requirement.jsonl` to show the dataset, and explain **JSONL**: one self-contained JSON object per line, easy to stream/append, the de-facto format for AI datasets — we'll see it again for fine-tuning and model evaluation.
+1. Walk through the key blocks:
+   - `AIProjectClient` + `GetEvaluationClient()` — same auth story (`DefaultAzureCredential`).
+   - `testingCriteria` — `task_completion` and `task_adherence` Azure AI evaluators wired to the judge deployment.
+   - `dataSourceConfig` + `runDataItems` — JSONL dataset reshaped into `{{item.query}}`.
+   - The `azure_ai_target_completions` data source pointing at our deployed agent (`name = AGENT_LOCAL_TOOLS_NAME`).
+1. Stress that this can also be done from the portal, but doing it in code gives us **repeatability** and lets us run the same evaluation from a **CI/CD pipeline** on every change.
+1. Open the evaluation in the portal: [Character Sheet Requirement Evaluation](https://ai.azure.com/nextgen/r/5y5SVPJlTpWb0p7o5zKQUQ,rg-ai-project-dnd-npc-agent-john-cc-dev,,ai-account-3phirl5w4q3ks,ai-project-ai-project-dnd-npc-agent-john-cc-dev/build/evaluations/eval_ddb13660bf554a6495cf2928988717da).
+1. Explain the concepts on screen:
+   - **Evaluation** — the named container holding all runs that share the same dataset schema and criteria.
+   - **Run** — one execution against a target (agent version, model, etc.).
+   - **Evaluators** — the metrics computing pass/fail per row (`task_completion`, `task_adherence`).
+   - **Metrics** — aggregate scores over the dataset.
+1. Compare the two runs (faulty branch vs. `main`): point out the noticeably better **task adherence** score on the fixed version — the agent now sticks to the instruction to request a character sheet first.
+
