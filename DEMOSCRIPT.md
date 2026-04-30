@@ -95,29 +95,25 @@ Before starting the demo, prepare your environment:
    ```
    Follow the prompts to select your subscription and resource group. Wait for the deployment to complete before proceeding with the demo.
 
-## Generating a Synthetic Dataset
+## Demos
 
-This demo shows how to create and evaluate a synthetic dataset for the D&D NPC Agent.
+### Showcase the agent (faulty vs. fixed)
 
-### Steps to Generate Synthetic Dataset
+1. Checkout the buggy branch: `git checkout bug/missing-character-sheet-instructions`.
+1. Open `src/local-tools` in VS Code and press **F5** to run the agent locally.
+1. Explain at a high level: a D&D character sheet is the structured stat block (HP, AC, attacks, traits) that defines what an NPC can do — without it the agent has no source of truth.
+1. From a separate terminal, invoke the agent:
+   ```powershell
+   azd ai agent invoke --local "You're being attacked, what's your armor class? and do you run or take the blow?"
+   ```
+1. Show that the agent **makes something up** — it has no sheet and no instruction to ask for one.
+1. Stop the debugger, `git checkout main`, and **F5** again.
+1. Re-run the same `azd ai agent invoke --local "..."` command — the agent now refuses and asks for a character sheet.
+1. Feed it a real sheet and re-ask:
+   ```powershell
+   $sheet = Get-Content -Raw character-sheets/Goblin_Skirmisher_CR025.md
+   azd ai agent invoke --local "$sheet`n`nYou're being attacked, what's your armor class? and do you run or take the blow?"
+   ```
+1. Show that the answer is now grounded in the stat block (correct AC, in-character decision).
+1. Conclude: this is exactly the kind of regression we want to catch automatically — next we'll build evaluations to guarantee the agent always asks for the character sheet first.
 
-1. Open the **Playground**
-2. Click **Evaluation** in the navigation
-3. Click **Create New Evaluation**
-4. Select **Target Agent**
-5. Click **Generate Synthetic Dataset**
-
-### Synthetic Dataset Prompt
-
-Use the following prompt when generating the synthetic dataset:
-
-```
-This agent will role play non playable characters in dungeons and dragons sessions.
-
-We need to ensure the agent is always asking for a character sheet from Dungeons and Dragons at the beginning of every session. If the user has not provided a character sheet, we need to remind them to do so before answering other character questions.
-```
-
-This prompt ensures the evaluation dataset tests the agent's ability to:
-- Request character sheets at the start of interactions
-- Enforce the requirement for character sheet information before proceeding
-- Remind users to provide their character sheet if it's missing
