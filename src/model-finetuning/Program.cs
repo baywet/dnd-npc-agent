@@ -14,12 +14,12 @@ using System.Runtime.CompilerServices;
 
 string trainingFilePath = Environment.GetEnvironmentVariable("TRAINING_FILE_PATH") ?? "data/dnd_npc_data_train.jsonl";
 string validationFilePath = Environment.GetEnvironmentVariable("VALIDATION_FILE_PATH") ?? "data/dnd_npc_data_valid.jsonl";
-string subscriptionID = Environment.GetEnvironmentVariable("AZURE_SUBSCRIPTION_ID");
-string resourceGroup = Environment.GetEnvironmentVariable("RESOURCE_GROUP");
-string foundryName = Environment.GetEnvironmentVariable("MICROSOFT_FOUNDRY_NAME");
+string subscriptionID = Environment.GetEnvironmentVariable("AZURE_SUBSCRIPTION_ID") ?? throw new InvalidOperationException("AZURE_SUBSCRIPTION_ID environment variable is not set.");
+string resourceGroup = Environment.GetEnvironmentVariable("RESOURCE_GROUP") ?? throw new InvalidOperationException("AZURE_SUBSCRIPTION_ID environment variable is not set.");
+string foundryName = Environment.GetEnvironmentVariable("MICROSOFT_FOUNDRY_NAME") ?? throw new InvalidOperationException("AZURE_SUBSCRIPTION_ID environment variable is not set.");
 
 // Initialize the clients
-var endpoint = Environment.GetEnvironmentVariable("FOUNDRY_PROJECT_ENDPOINT");
+var endpoint = Environment.GetEnvironmentVariable("FOUNDRY_PROJECT_ENDPOINT") ?? throw new InvalidOperationException("FOUNDRY_PROJECT_ENDPOINT environment variable is not set.");
 var modelDeploymentName = Environment.GetEnvironmentVariable("FOUNDRY_MODEL_NAME");
 var completedJob = Environment.GetEnvironmentVariable("COMPLETED_JOB");
 DefaultAzureCredential credential = new();
