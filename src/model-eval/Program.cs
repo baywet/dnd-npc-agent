@@ -115,8 +115,9 @@ var runDataItems = testData
     .Select(tc => new { item = new { query = tc.Query, ground_truth = tc.GroundTruth } })
     .ToArray();
 
-await CreateAndPollRunAsync(evaluationClient, evaluationId, "base", baseModelName, runDataItems);
-await CreateAndPollRunAsync(evaluationClient, evaluationId, "fine-tuned", fineTunedModelName, runDataItems);
+await Task.WhenAll(
+    CreateAndPollRunAsync(evaluationClient, evaluationId, "base", baseModelName, runDataItems),
+    CreateAndPollRunAsync(evaluationClient, evaluationId, "fine-tuned", fineTunedModelName, runDataItems));
 
 Console.WriteLine("\n✓ All model evaluation runs finished.");
 
