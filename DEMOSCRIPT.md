@@ -135,3 +135,14 @@ Before starting the demo, prepare your environment:
    - **Metrics** — aggregate scores over the dataset.
 1. Compare the two runs (faulty branch vs. `main`): point out the noticeably better **task adherence** score on the fixed version — the agent now sticks to the instruction to request a character sheet first.
 
+### Fine-tuning the model
+
+1. Set the stage: fine-tuning is **not** designed to teach a model new facts or index data — for that, use RAG / vector stores. Fine-tuning **pre-disposes** a model to do a specific task well without requiring a long system prompt every time.
+1. Open `src/model-finetuning/data/dnd_npc_data_train.jsonl` (and briefly `dnd_npc_data_valid.jsonl`). Point out the DPO shape: each line has an `input`, a `preferred_output`, and a `non_preferred_output` — the model learns to favor the first over the second.
+1. Open `src/model-finetuning/Program.cs` and walk through:
+   - File upload via `ProjectFilesClient.UploadFileAsync` with `FileUploadPurpose.FineTune`.
+   - The DPO request body (sent as `BinaryContent` because `trainingType: "GlobalStandard"` isn't in the strongly-typed surface yet) with `n_epochs`, `batch_size`, `learning_rate_multiplier`.
+   - Polling the `FineTuningJob` until terminal, then deploying the resulting custom model via `ArmClient` + `CognitiveServicesAccountDeploymentData`.
+1. Open the [Fine-tuning page](https://ai.azure.com/nextgen/r/5y5SVPJlTpWb0p7o5zKQUQ,rg-ai-project-dnd-npc-agent-john-cc-dev,,ai-account-3phirl5w4q3ks,ai-project-ai-project-dnd-npc-agent-john-cc-dev/build/fine-tune) in the portal — show the completed job, the training/validation loss curves, and the resulting custom model.
+1. Open the [Deployments page](https://ai.azure.com/nextgen/r/5y5SVPJlTpWb0p7o5zKQUQ,rg-ai-project-dnd-npc-agent-john-cc-dev,,ai-account-3phirl5w4q3ks,ai-project-ai-project-dnd-npc-agent-john-cc-dev/build/models/deployments) — show the fine-tuned deployment sitting alongside the base model, ready to be called like any other deployment.
+
