@@ -9,6 +9,7 @@ using OpenAI.FineTuning;
 using Azure.ResourceManager;
 using Azure.ResourceManager.CognitiveServices;
 using Azure.ResourceManager.CognitiveServices.Models;
+using System.ClientModel;
 
 #pragma warning disable OPENAI001
 
@@ -45,18 +46,36 @@ if (string.IsNullOrEmpty(completedJob))
 
     // Create supervised fine-tuning job
     Console.WriteLine("Creating Direct Preference Optimization fine-tuning job...");
-    fineTuningJob = await fineTuningClient.FineTuneAsync(
-        modelDeploymentName,
-        trainFile.Id,
-        waitUntilCompleted: false,
-        new()
+
+    // Azure requires training_type: "global" — there is no strongly-typed property
+    // for this on FineTuningOptions, so we send the request via BinaryContent and
+    // hydrate FineTuningJob from the response.
+    var requestBody = BinaryData.FromObjectAsJson(new
+    {
+        model = modelDeploymentName,
+        training_file = trainFile.Id,
+        validation_file = validFile.Id,
+        trainingType = "GlobalStandard",
+        method = new
         {
-            TrainingMethod = FineTuningTrainingMethod.CreateDirectPreferenceOptimization(
-                epochCount: 1,
-                batchSize: 4,
-                learningRate: 0.0001),
-            ValidationFile = validFile.Id
-        });
+            type = "dpo",
+            dpo = new
+            {
+                hyperparameters = new
+                {
+                    n_epochs = 1,
+                    batch_size = 4,
+                    learning_rate_multiplier = 0.0001
+                }
+            }
+        }
+    });
+
+    using BinaryContent requestContent = BinaryContent.Create(requestBody);
+    fineTuningJob = await fineTuningClient.FineTuneAsync(
+        requestContent,
+        waitUntilCompleted: false,
+        options: null);
     Console.WriteLine($"Created fine-tuning job: {fineTuningJob.JobId}");
 
     // Wait for fine tuning task to complete. It may take a while!
@@ -123,7 +142,7 @@ async static Task<OpenAIFile> UploadFile(ProjectFilesClient fileClient, string p
                 FileUploadPurpose.FineTune);
     while (file.Status != FileStatus.Processed && file.Status != FileStatus.Error)
     {
-        await Task.Delay(2);
+        await Task.Delay(TimeSpan.FromSeconds(2));
         file = await fileClient.GetFileAsync(file.Id);
     }
     if (file.Status == FileStatus.Error)
