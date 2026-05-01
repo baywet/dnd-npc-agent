@@ -145,7 +145,6 @@ await accountResource.GetCognitiveServicesAccountDeployments()
     .CreateOrUpdateAsync(Azure.WaitUntil.Completed, deploymentName, deploymentData);
 Console.WriteLine("Model deployment has completed!");
 
-#region Helpers
 // Upload file
 async static Task<OpenAIFile> UploadFile(ProjectFilesClient fileClient, string path)
 {
@@ -166,4 +165,3 @@ async static Task<OpenAIFile> UploadFile(ProjectFilesClient fileClient, string p
     }
     return file;
 }
-#endregion

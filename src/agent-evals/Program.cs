@@ -203,6 +203,8 @@ static async Task<string?> FindEvaluationIdByNameAsync(EvaluationClient client, 
     }
 }
 
+#region Helpers
+
 static List<TestCase> LoadDataset(string path)
 {
     var testCases = new List<TestCase>();
@@ -225,8 +227,6 @@ static List<TestCase> LoadDataset(string path)
 
     return testCases;
 }
-
-#region Response parsing helpers
 
 static string ParseEvaluationId(ClientResult result)
 {
