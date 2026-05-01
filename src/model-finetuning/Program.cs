@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+
+#region Usings
+
 using Azure.AI.Extensions.OpenAI;
 using Azure.AI.Projects;
 using Azure.Identity;
@@ -13,6 +16,10 @@ using System.ClientModel;
 
 #pragma warning disable OPENAI001
 
+#endregion
+
+#region Environment variables
+
 // Load environment variables from .env file
 Env.TraversePath().Load();
 
@@ -22,15 +29,22 @@ string subscriptionID = Environment.GetEnvironmentVariable("AZURE_SUBSCRIPTION_I
 string resourceGroup = Environment.GetEnvironmentVariable("AZURE_RESOURCE_GROUP") ?? throw new InvalidOperationException("AZURE_RESOURCE_GROUP environment variable is not set.");
 string foundryName = Environment.GetEnvironmentVariable("AZURE_AI_ACCOUNT_NAME") ?? throw new InvalidOperationException("AZURE_AI_ACCOUNT_NAME environment variable is not set.");
 
-// Initialize the clients
 var endpoint = Environment.GetEnvironmentVariable("FOUNDRY_PROJECT_ENDPOINT") ?? throw new InvalidOperationException("FOUNDRY_PROJECT_ENDPOINT environment variable is not set.");
 var modelDeploymentName = Environment.GetEnvironmentVariable("AZURE_AI_MODEL_DEPLOYMENT_NAME") ?? throw new InvalidOperationException("AZURE_AI_MODEL_DEPLOYMENT_NAME environment variable is not set.");
 var completedJob = Environment.GetEnvironmentVariable("COMPLETED_JOB");
+
+#endregion
+
+#region Client creation
+
 DefaultAzureCredential credential = new();
 
 AIProjectClient projectClient = new(new Uri(endpoint), credential);
 ProjectFilesClient fileClient = projectClient.ProjectOpenAIClient.GetProjectFilesClient();
 FineTuningClient fineTuningClient = projectClient.ProjectOpenAIClient.GetFineTuningClient();
+
+#endregion
+
 FineTuningJob fineTuningJob;
 if (string.IsNullOrEmpty(completedJob))
 {

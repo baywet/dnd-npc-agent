@@ -1,3 +1,5 @@
+#region Usings
+
 using Azure.AI.Projects;
 using Azure.Identity;
 using DotNetEnv;
@@ -6,6 +8,10 @@ using OpenAI.Evals;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Text.Json;
+
+#endregion
+
+#region Environment variables
 
 // Load environment variables from .env file
 Env.TraversePath().Load();
@@ -31,11 +37,17 @@ Console.WriteLine($"Base model: {baseModelName}");
 Console.WriteLine($"Fine-tuned model: {fineTunedModelName}");
 Console.WriteLine($"Dataset: {datasetPath}\n");
 
+#endregion
+
+#region Client creation
+
 var credential = new DefaultAzureCredential();
 var projectClient = new AIProjectClient(projectEndpoint, credential);
 
 var oaiClient = projectClient.ProjectOpenAIClient;
 var evaluationClient = oaiClient.GetEvaluationClient();
+
+#endregion
 
 Console.WriteLine("Loading dataset...");
 var testData = LoadDataset(datasetPath);
