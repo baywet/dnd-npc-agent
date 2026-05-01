@@ -1,0 +1,58 @@
+# Runs offline evaluation of the deployed Foundry agent using the
+# microsoft/ai-agent-evals GitHub Action.
+# Documentation: https://learn.microsoft.com/en-us/azure/foundry/how-to/evaluation-github-action
+name: Agent Evaluation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dataset:
+          - character_sheet_requirement
+          - local_tools_72ksdj74lb
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Azure login using Federated Credentials
+        uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # The microsoft/ai-agent-evals action expects a single JSON file with
+      # `name`, `evaluators`, and `data` fields. Our committed datasets are
+      # JSONL (one test case per line), so convert them on the fly with jq.
+      - name: Build evaluation data file
+        id: build-data
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/eval-data"
+          out="${RUNNER_TEMP}/eval-data/${{ matrix.dataset }}.json"
+          jq -s --arg name "${{ matrix.dataset }}" '{
+            name: $name,
+            evaluators: [
+              "builtin.task_adherence",
+              "builtin.task_completion"
+            ],
+            data: [ .[] | { query: .query } ]
+          }' "agent-eval-datasets/${{ matrix.dataset }}.jsonl" > "$out"
+          echo "data-path=$out" >> "$GITHUB_OUTPUT"
+
+      - name: Run Evaluation
+        uses: microsoft/ai-agent-evals@v3-beta
+        with:
+          azure-ai-project-endpoint: ${{ vars.FOUNDRY_PROJECT_ENDPOINT }}
+          deployment-name: ${{ vars.AZURE_AI_MODEL_DEPLOYMENT_NAME }}
+          agent-ids: ${{ vars.AGENT_LOCAL_TOOLS_ID }}
+          data-path: ${{ steps.build-data.outputs.data-path }}
