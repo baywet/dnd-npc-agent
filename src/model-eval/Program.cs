@@ -115,9 +115,9 @@ var runDataItems = testData
     .Select(tc => new { item = new { query = tc.Query, ground_truth = tc.GroundTruth } })
     .ToArray();
 
-await Task.WhenAll(
-    CreateAndPollRunAsync(evaluationClient, evaluationId, "base", baseModelName, runDataItems),
-    CreateAndPollRunAsync(evaluationClient, evaluationId, "fine-tuned", fineTunedModelName, runDataItems));
+// Run sequentially so the shared judge model deployment is not throttled by concurrent requests.
+await CreateAndPollRunAsync(evaluationClient, evaluationId, "base", baseModelName, runDataItems);
+await CreateAndPollRunAsync(evaluationClient, evaluationId, "fine-tuned", fineTunedModelName, runDataItems);
 
 Console.WriteLine("\n✓ All model evaluation runs finished.");
 

@@ -146,3 +146,17 @@ Before starting the demo, prepare your environment:
 1. Open the [Fine-tuning page](https://ai.azure.com/nextgen/r/5y5SVPJlTpWb0p7o5zKQUQ,rg-ai-project-dnd-npc-agent-john-cc-dev,,ai-account-3phirl5w4q3ks,ai-project-ai-project-dnd-npc-agent-john-cc-dev/build/fine-tune) in the portal — show the completed job, the training/validation loss curves, and the resulting custom model.
 1. Open the [Deployments page](https://ai.azure.com/nextgen/r/5y5SVPJlTpWb0p7o5zKQUQ,rg-ai-project-dnd-npc-agent-john-cc-dev,,ai-account-3phirl5w4q3ks,ai-project-ai-project-dnd-npc-agent-john-cc-dev/build/models/deployments) — show the fine-tuned deployment sitting alongside the base model, ready to be called like any other deployment.
 
+### Model evaluation
+
+1. Open `src/model-eval/Program.cs`.
+1. Walk through the key blocks:
+   - `BASE_MODEL_DEPLOYMENT_NAME` / `FINE_TUNED_MODEL_DEPLOYMENT_NAME` — two separate deployments being exercised in the same run.
+   - `testingCriteria` — `similarity` (LLM-based semantic comparison against a `ground_truth` field) and `task_adherence` evaluators, both powered by the same judge deployment.
+   - The dataset loaded from `datasets/dnd_npc_data_test.jsonl`: each row carries a `query` and a `ground_truth` extracted from the DPO `preferred_output`, giving the judge an objective reference answer.
+   - `CreateAndPollRunAsync` is called **twice in sequence** — first for the base model, then for the fine-tuned model. Stress that both runs are submitted to the **same evaluation**, which is what allows the portal to display them side-by-side and makes comparison meaningful.
+   - Highlight that the runs are executed **sequentially, not in parallel** (`await … await` rather than `Task.WhenAll`). The two runs share the same judge-model deployment; firing them concurrently would double the token rate and risk throttling the evaluator mid-run, producing incomplete or failed results.
+1. Open the evaluation in the portal: [D&D NPC Model Evaluation](https://ai.azure.com/nextgen/r/5y5SVPJlTpWb0p7o5zKQUQ,rg-ai-project-dnd-npc-agent-john-cc-dev,,ai-account-3phirl5w4q3ks,ai-project-ai-project-dnd-npc-agent-john-cc-dev/build/evaluations).
+   - Select the **D&D NPC Model Evaluation** entry.
+   - Switch to the **Compare** view and select both runs (base and fine-tuned).
+   - Point out the improvement in `similarity` score — the fine-tuned model's responses are semantically closer to the preferred ground-truth answers — and the uplift in `task_adherence`, showing the model has internalized the expected behavior without a heavy system prompt.
+
