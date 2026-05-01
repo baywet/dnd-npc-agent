@@ -38,25 +38,34 @@ azd extension install azure.ai.agents
 > Plan ahead — the full sequence takes **~4 hours end to end** (mostly fine-tuning). The two evaluation runs can be executed in parallel from separate terminals to save time.
 
 1. **Provision Foundry & deploy the faulty agent** — checkout the buggy branch and deploy if no environment exists yet:
+
    ```bash
    git checkout bug/missing-character-sheet-instructions
    azd up
    ```
+
 2. **Run the agent evaluation (faulty version)** — F5 the `agent-evals` project in VS Code, or:
+
    ```bash
    dotnet run --project src/agent-evals
    ```
+
 3. **Deploy the fixed agent** — switch back and redeploy:
+
    ```bash
    git checkout main
    azd deploy
    ```
+
 4. **Run the agent evaluation (fixed version)** — same as step 2 (`dotnet run --project src/agent-evals`).
 5. **Run the model fine-tuning** — F5 the `model-finetuning` project, or:
+
    ```bash
    dotnet run --project src/model-finetuning
    ```
+
 6. **Run the model evaluation** — F5 the `model-eval` project, or:
+
    ```bash
    dotnet run --project src/model-eval
    ```
@@ -69,6 +78,7 @@ azd extension install azure.ai.agents
 Before starting the demo, prepare your environment:
 
 1. **Sign in to Azure** - Ensure both `azd` and the Azure CLI are signed in to your corporate identity (the Azure CLI sign-in is what `DefaultAzureCredential` picks up at runtime to call the backend APIs):
+
    ```bash
    azd auth login
    az login
@@ -77,6 +87,7 @@ Before starting the demo, prepare your environment:
 2. **Open Terminal** - Open Windows Terminal and navigate to this repository directory
 
 3. **Open Browser Session** - Open the Azure AI Foundry playground in your browser:
+
    ```
    https://ai.azure.com/nextgen/r/5y5SVPJlTpWb0p7o5zKQUQ,rg-ai-project-dnd-npc-agent-john-cc-dev,,ai-account-3phirl5w4q3ks,ai-project-ai-project-dnd-npc-agent-john-cc-dev/build/agents/local-tools/build?version=3
    ```
@@ -90,9 +101,11 @@ Before starting the demo, prepare your environment:
 4. **Test Agent Responsiveness** - In the playground, send a test message to the agent to verify it's responsive
 
 5. **Redeploy if Needed** - If the agent is not responding, redeploy it using:
+
    ```bash
    azd up
    ```
+
    Follow the prompts to select your subscription and resource group. Wait for the deployment to complete before proceeding with the demo.
 
 ## Demos
@@ -103,17 +116,21 @@ Before starting the demo, prepare your environment:
 1. Open `src/local-tools` in VS Code and press **F5** to run the agent locally.
 1. Explain at a high level: a D&D character sheet is the structured stat block (HP, AC, attacks, traits) that defines what an NPC can do — without it the agent has no source of truth.
 1. From a separate terminal, invoke the agent:
+
    ```powershell
    azd ai agent invoke --local "You're being attacked, what's your armor class? and do you run or take the blow?"
    ```
+
 1. Show that the agent **makes something up** — it has no sheet and no instruction to ask for one.
 1. Stop the debugger, `git checkout main`, and **F5** again.
 1. Re-run the same `azd ai agent invoke --local "..."` command — the agent now refuses and asks for a character sheet.
 1. Feed it a real sheet and re-ask:
+
    ```powershell
    $sheet = Get-Content -Raw character-sheets/Goblin_Skirmisher_CR025.md
    azd ai agent invoke --local "$sheet`n`nYou're being attacked, what's your armor class? and do you run or take the blow?"
    ```
+
 1. Show that the answer is now grounded in the stat block (correct AC, in-character decision).
 1. Conclude: this is exactly the kind of regression we want to catch automatically — next we'll build evaluations to guarantee the agent always asks for the character sheet first.
 
@@ -159,4 +176,3 @@ Before starting the demo, prepare your environment:
    - Select the **D&D NPC Model Evaluation** entry.
    - Switch to the **Compare** view and select both runs (base and fine-tuned).
    - Point out the improvement in `similarity` score — the fine-tuned model's responses are semantically closer to the preferred ground-truth answers — and the uplift in `task_adherence`, showing the model has internalized the expected behavior without a heavy system prompt.
-

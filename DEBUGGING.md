@@ -59,12 +59,14 @@ azd env get-values > .env
 The two values in the `env` block of `launch.json` are not part of the `azd` env file, so set them once per shell session:
 
 **bash / zsh:**
+
 ```bash
 export DOTNET_ENVIRONMENT=Development
 export FOUNDRY_PROJECT_ENDPOINT="https://ai-account-3phirl5w4q3ks.services.ai.azure.com/api/projects/ai-project-ai-project-dnd-npc-agent-john-cc-dev"
 ```
 
 **PowerShell:**
+
 ```powershell
 $env:DOTNET_ENVIRONMENT = "Development"
 $env:FOUNDRY_PROJECT_ENDPOINT = "https://ai-account-3phirl5w4q3ks.services.ai.azure.com/api/projects/ai-project-ai-project-dnd-npc-agent-john-cc-dev"

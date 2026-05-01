@@ -15,6 +15,7 @@ Copilot will run `dotnet format` before creating any commit to ensure all code a
 When instructed to commit changes, Copilot will use **conventional commits** for commit messages. This ensures consistent, semantic commit messages that are easy to parse and understand.
 
 Conventional commit format:
+
 ```
 <type>(<scope>): <description>
 
@@ -24,6 +25,7 @@ Conventional commit format:
 ```
 
 **Common types:**
+
 - `feat`: A new feature
 - `fix`: A bug fix
 - `docs`: Documentation changes
@@ -32,6 +34,7 @@ Conventional commit format:
 - `chore`: Build, dependencies, or tooling changes
 
 **Example:**
+
 ```
 feat(agent): add support for multi-turn conversations
 
@@ -42,6 +45,7 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 ```
 
 When you ask Copilot to commit your changes, it will:
+
 1. Run `dotnet format` to format all code
 2. Automatically analyze the diff to determine the appropriate type and scope
 3. Generate a descriptive conventional commit message
