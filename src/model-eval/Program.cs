@@ -106,8 +106,7 @@ else
     using var evaluationCreateContent = BinaryContent.Create(evaluationCreatePayload);
     ClientResult evaluationResult = await evaluationClient.CreateEvaluationAsync(evaluationCreateContent);
 
-    var evaluationJson = JsonDocument.Parse(evaluationResult.GetRawResponse().Content.ToString());
-    evaluationId = evaluationJson.RootElement.GetProperty("id").GetString()!;
+    evaluationId = ParseEvaluationId(evaluationResult);
     Console.WriteLine($"✓ Evaluation created (id: {evaluationId})\n");
 }
 
@@ -167,10 +166,7 @@ static async Task CreateAndPollRunAsync(
     using var runCreateContent = BinaryContent.Create(runCreatePayload);
     ClientResult runResult = await client.CreateEvaluationRunAsync(evaluationId, runCreateContent);
 
-    var runJson = JsonDocument.Parse(runResult.GetRawResponse().Content.ToString());
-    var runId = runJson.RootElement.GetProperty("id").GetString()!;
-    var runStatus = runJson.RootElement.GetProperty("status").GetString();
-    var reportUrl = runJson.RootElement.TryGetProperty("report_url", out var ru) ? ru.GetString() : null;
+    var (runId, runStatus, reportUrl) = ParseEvaluationRun(runResult);
 
     Console.WriteLine($"✓ Run created for '{label}' (id: {runId}, status: {runStatus})");
     if (!string.IsNullOrEmpty(reportUrl))
@@ -183,8 +179,7 @@ static async Task CreateAndPollRunAsync(
     {
         await Task.Delay(TimeSpan.FromSeconds(15));
         ClientResult statusResult = await client.GetEvaluationRunAsync(evaluationId, runId, options: null);
-        var statusJson = JsonDocument.Parse(statusResult.GetRawResponse().Content.ToString());
-        runStatus = statusJson.RootElement.GetProperty("status").GetString();
+        runStatus = ParseRunStatus(statusResult);
         Console.WriteLine($"  [{label}] Status: {runStatus} (at {DateTime.Now:HH:mm:ss})");
     }
 
@@ -203,26 +198,10 @@ static async Task<string?> FindEvaluationIdByNameAsync(EvaluationClient client, 
             after: after,
             options: null);
 
-        var pageJson = JsonDocument.Parse(page.GetRawResponse().Content.ToString());
-        var root = pageJson.RootElement;
-
-        if (root.TryGetProperty("data", out var data))
-        {
-            foreach (var item in data.EnumerateArray())
-            {
-                if (item.TryGetProperty("name", out var nameProp)
-                    && string.Equals(nameProp.GetString(), name, StringComparison.Ordinal))
-                {
-                    return item.GetProperty("id").GetString();
-                }
-            }
-        }
-
-        var hasMore = root.TryGetProperty("has_more", out var hm) && hm.GetBoolean();
-        if (!hasMore) return null;
-
-        after = root.TryGetProperty("last_id", out var lastId) ? lastId.GetString() : null;
-        if (string.IsNullOrEmpty(after)) return null;
+        var (matchedId, nextAfter) = FindEvaluationOnPage(page, name);
+        if (matchedId is not null) return matchedId;
+        if (nextAfter is null) return null;
+        after = nextAfter;
     }
 }
 
@@ -240,46 +219,106 @@ static List<TestCase> LoadDataset(string path)
         if (string.IsNullOrWhiteSpace(line))
             continue;
 
-        using var doc = JsonDocument.Parse(line);
-        var root = doc.RootElement;
-
-        // Extract the last user message from input.messages as the query.
-        string query = "";
-        if (root.TryGetProperty("input", out var input)
-            && input.TryGetProperty("messages", out var messages))
+        var testCase = ParseDatasetLine(line);
+        if (testCase is not null)
         {
-            foreach (var msg in messages.EnumerateArray())
-            {
-                if (msg.TryGetProperty("role", out var role)
-                    && role.GetString() == "user"
-                    && msg.TryGetProperty("content", out var content))
-                {
-                    query = content.GetString() ?? "";
-                }
-            }
-        }
-
-        // Use the first preferred_output assistant message as ground truth.
-        string groundTruth = "";
-        if (root.TryGetProperty("preferred_output", out var preferred)
-            && preferred.ValueKind == JsonValueKind.Array
-            && preferred.GetArrayLength() > 0)
-        {
-            var first = preferred[0];
-            if (first.TryGetProperty("content", out var gt))
-            {
-                groundTruth = gt.GetString() ?? "";
-            }
-        }
-
-        if (!string.IsNullOrEmpty(query) && !string.IsNullOrEmpty(groundTruth))
-        {
-            testCases.Add(new TestCase { Query = query, GroundTruth = groundTruth });
+            testCases.Add(testCase);
         }
     }
 
     return testCases;
 }
+
+#region Response parsing helpers
+
+static string ParseEvaluationId(ClientResult result)
+{
+    using var doc = JsonDocument.Parse(result.GetRawResponse().Content.ToString());
+    return doc.RootElement.GetProperty("id").GetString()!;
+}
+
+static (string Id, string? Status, string? ReportUrl) ParseEvaluationRun(ClientResult result)
+{
+    using var doc = JsonDocument.Parse(result.GetRawResponse().Content.ToString());
+    var root = doc.RootElement;
+    var id = root.GetProperty("id").GetString()!;
+    var status = root.GetProperty("status").GetString();
+    var reportUrl = root.TryGetProperty("report_url", out var ru) ? ru.GetString() : null;
+    return (id, status, reportUrl);
+}
+
+static string? ParseRunStatus(ClientResult result)
+{
+    using var doc = JsonDocument.Parse(result.GetRawResponse().Content.ToString());
+    return doc.RootElement.GetProperty("status").GetString();
+}
+
+// Returns the id of a matching evaluation on the page, or the cursor for the next page if no match.
+// If both are null, pagination is exhausted.
+static (string? MatchedId, string? NextAfter) FindEvaluationOnPage(ClientResult page, string name)
+{
+    using var doc = JsonDocument.Parse(page.GetRawResponse().Content.ToString());
+    var root = doc.RootElement;
+
+    if (root.TryGetProperty("data", out var data))
+    {
+        foreach (var item in data.EnumerateArray())
+        {
+            if (item.TryGetProperty("name", out var nameProp)
+                && string.Equals(nameProp.GetString(), name, StringComparison.Ordinal))
+            {
+                return (item.GetProperty("id").GetString(), null);
+            }
+        }
+    }
+
+    var hasMore = root.TryGetProperty("has_more", out var hm) && hm.GetBoolean();
+    if (!hasMore) return (null, null);
+
+    var nextAfter = root.TryGetProperty("last_id", out var lastId) ? lastId.GetString() : null;
+    return (null, string.IsNullOrEmpty(nextAfter) ? null : nextAfter);
+}
+
+// Extracts the last user message as the query and the first preferred_output as ground truth.
+// Returns null if either field is missing or empty.
+static TestCase? ParseDatasetLine(string line)
+{
+    using var doc = JsonDocument.Parse(line);
+    var root = doc.RootElement;
+
+    string query = "";
+    if (root.TryGetProperty("input", out var input)
+        && input.TryGetProperty("messages", out var messages))
+    {
+        foreach (var msg in messages.EnumerateArray())
+        {
+            if (msg.TryGetProperty("role", out var role)
+                && role.GetString() == "user"
+                && msg.TryGetProperty("content", out var content))
+            {
+                query = content.GetString() ?? "";
+            }
+        }
+    }
+
+    string groundTruth = "";
+    if (root.TryGetProperty("preferred_output", out var preferred)
+        && preferred.ValueKind == JsonValueKind.Array
+        && preferred.GetArrayLength() > 0
+        && preferred[0].TryGetProperty("content", out var gt))
+    {
+        groundTruth = gt.GetString() ?? "";
+    }
+
+    if (string.IsNullOrEmpty(query) || string.IsNullOrEmpty(groundTruth))
+    {
+        return null;
+    }
+
+    return new TestCase { Query = query, GroundTruth = groundTruth };
+}
+
+#endregion
 
 record TestCase
 {
