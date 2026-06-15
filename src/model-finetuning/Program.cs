@@ -93,8 +93,9 @@ if (string.IsNullOrEmpty(completedJob))
     Console.WriteLine($"Created fine-tuning job: {fineTuningJob.JobId}");
 
     // Wait for fine tuning task to complete. It may take a while!
-    while (fineTuningJob.Status != FineTuningStatus.Succeeded && fineTuningJob.Status != FineTuningStatus.Failed || fineTuningJob.Status != FineTuningStatus.Cancelled)
+    while (fineTuningJob.Status != FineTuningStatus.Succeeded && fineTuningJob.Status != FineTuningStatus.Failed && fineTuningJob.Status != FineTuningStatus.Cancelled)
     {
+        Console.WriteLine($"Fine-tuning job {fineTuningJob.JobId} is in status: {fineTuningJob.Status}");
         await Task.Delay(TimeSpan.FromMinutes(10));
         fineTuningJob = await fineTuningClient.GetJobAsync(fineTuningJob.JobId);
     }
