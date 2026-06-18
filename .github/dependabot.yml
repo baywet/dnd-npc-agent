@@ -28,7 +28,7 @@ updates:
       include: "scope"
 
   # Enable version updates for .NET SDK in global.json
-  - package-ecosystem: "github-actions"
+  - package-ecosystem: "dotnet-sdk"
     directory: "/"
     schedule:
       interval: "daily"
