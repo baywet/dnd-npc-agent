@@ -21,7 +21,7 @@ jobs:
           - local_tools_72ksdj74lb
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Azure login using Federated Credentials
         uses: azure/login@v3
