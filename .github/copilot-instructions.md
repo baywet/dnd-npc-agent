@@ -32,7 +32,7 @@ dotnet test  --no-build  --configuration Release
 - **All projects load `.env` via `DotNetEnv` at the very top of `Program.cs`** using `Env.TraversePath().Load();`. `TraversePath()` walks up parent directories, so a single `.env` at the repo root works for `dotnet run` from any project. `.env` is gitignored — never commit it.
 - The library-based load is intentional so the apps work the same whether launched from VS Code (which has its own `envFile` support) or directly via `dotnet run`. When adding a new executable project, follow the same pattern: add `DotNetEnv 3.2.0` and call `Env.TraversePath().Load();` before any `Environment.GetEnvironmentVariable` reads.
 - Required env vars per project are validated at startup with `?? throw new InvalidOperationException(...)`. Common keys: `FOUNDRY_PROJECT_ENDPOINT`, `AZURE_AI_MODEL_DEPLOYMENT_NAME`, `AGENT_LOCAL_TOOLS_NAME`, `AZURE_SUBSCRIPTION_ID`, `AZURE_RESOURCE_GROUP`, `AZURE_AI_ACCOUNT_NAME`.
-- Auth uses `DefaultAzureCredential` everywhere — `az login` is the developer prerequisite.
+- Auth uses `AzureCliCredential` everywhere — `az login` is the developer prerequisite.
 
 ## Deployment
 

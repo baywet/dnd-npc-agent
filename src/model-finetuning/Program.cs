@@ -37,7 +37,7 @@ var completedJob = Environment.GetEnvironmentVariable("COMPLETED_JOB");
 
 #region Client creation
 
-DefaultAzureCredential credential = new();
+AzureCliCredential credential = new();
 
 AIProjectClient projectClient = new(new Uri(endpoint), credential);
 ProjectFilesClient fileClient = projectClient.ProjectOpenAIClient.GetProjectFilesClient();
