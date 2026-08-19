@@ -13,6 +13,8 @@ updates:
       prefix: "chore(deps):"
       prefix-development: "chore(deps-dev):"
       include: "scope"
+    cooldown:
+      default-days: 7
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
