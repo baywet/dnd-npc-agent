@@ -40,7 +40,7 @@ Console.WriteLine($"Dataset: {datasetPath}\n");
 #region Client creation
 
 // Initialize Foundry client
-var credential = new DefaultAzureCredential();
+var credential = new AzureCliCredential();
 var projectClient = new AIProjectClient(projectEndpoint, credential);
 
 // Get OpenAI evaluation client through ProjectOpenAIClient

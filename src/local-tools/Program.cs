@@ -24,7 +24,13 @@ var deployment = Environment.GetEnvironmentVariable("AZURE_AI_MODEL_DEPLOYMENT_N
 
 #region Agent definition
 
-AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential())
+#if DEBUG
+var credentials = new AzureCliCredential();
+#else
+var credentials = new ManagedIdentityCredential();
+#endif
+
+AIAgent agent = new AIProjectClient(projectEndpoint, credentials)
     .AsAIAgent(
         model: deployment,
         instructions: """
