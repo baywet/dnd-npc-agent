@@ -66,7 +66,7 @@ Provisions the Microsoft Foundry project and its dependencies. `main.bicep` is t
 ## Prerequisites
 
 - [.NET SDK 10.0.203](https://dotnet.microsoft.com/download) (pinned in `global.json`)
-- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) — sign in with `az login` (auth uses `DefaultAzureCredential` everywhere)
+- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) — sign in with `az login` (auth uses `AzureCliCredential` everywhere)
 - [Azure Developer CLI (`azd`)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) for deployment
 - [Docker](https://www.docker.com/) for the hosted‑agent container build
 - An Azure subscription with access to Microsoft Foundry in a [supported region](./SCAFFOLDING-INSTRUCTIONS.md)

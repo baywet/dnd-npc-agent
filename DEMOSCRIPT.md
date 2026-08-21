@@ -8,7 +8,7 @@ Before running the demo, ensure you have the following installed:
 - **Visual Studio Code** - Recommended code editor
 - **Azure Developer CLI (azd)** - Required for deployment and management
 - **azd AI Agent Extension** - Install with `azd extension install azure.ai.agents`
-- **Azure CLI (az)** - Required so `DefaultAzureCredential` can authenticate the local programs (agent host, evals, fine-tuning) against the backend APIs
+- **Azure CLI (az)** - Required so `AzureCliCredential` can authenticate the local programs (agent host, evals, fine-tuning) against the backend APIs
 - **Windows Terminal** - Recommended terminal application
 - **PowerShell 7+** - Required for running scripts
 
@@ -77,7 +77,7 @@ azd extension install azure.ai.agents
 
 Before starting the demo, prepare your environment:
 
-1. **Sign in to Azure** - Ensure both `azd` and the Azure CLI are signed in to your corporate identity (the Azure CLI sign-in is what `DefaultAzureCredential` picks up at runtime to call the backend APIs):
+1. **Sign in to Azure** - Ensure both `azd` and the Azure CLI are signed in to your corporate identity (the Azure CLI sign-in is what `AzureCliCredential` picks up at runtime to call the backend APIs):
 
    ```bash
    azd auth login
@@ -139,7 +139,7 @@ Before starting the demo, prepare your environment:
 1. Open `src/agent-evals/Program.cs`.
 1. Open `agent-eval-datasets/character_sheet_requirement.jsonl` to show the dataset, and explain **JSONL**: one self-contained JSON object per line, easy to stream/append, the de-facto format for AI datasets — we'll see it again for fine-tuning and model evaluation.
 1. Walk through the key blocks:
-   - `AIProjectClient` + `GetEvaluationClient()` — same auth story (`DefaultAzureCredential`).
+   - `AIProjectClient` + `GetEvaluationClient()` — same auth story (`AzureCliCredential`).
    - `testingCriteria` — `task_completion` and `task_adherence` Azure AI evaluators wired to the judge deployment.
    - `dataSourceConfig` + `runDataItems` — JSONL dataset reshaped into `{{item.query}}`.
    - The `azure_ai_target_completions` data source pointing at our deployed agent (`name = AGENT_LOCAL_TOOLS_NAME`).

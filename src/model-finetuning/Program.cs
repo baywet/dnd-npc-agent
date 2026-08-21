@@ -37,7 +37,7 @@ var completedJob = Environment.GetEnvironmentVariable("COMPLETED_JOB");
 
 #region Client creation
 
-DefaultAzureCredential credential = new();
+AzureCliCredential credential = new();
 
 AIProjectClient projectClient = new(new Uri(endpoint), credential);
 ProjectFilesClient fileClient = projectClient.ProjectOpenAIClient.GetProjectFilesClient();
@@ -60,6 +60,12 @@ if (string.IsNullOrEmpty(completedJob))
 
     // Create supervised fine-tuning job
     Console.WriteLine("Creating Direct Preference Optimization fine-tuning job...");
+
+    // Temporary workaround, the service is not reporting the files status correctly.
+    // This leads to a failing if we try to create a fine-tuning job before the files are processed.
+    // So we wait for 2 seconds before creating the fine-tuning job.
+    await Task.Delay(TimeSpan.FromSeconds(2));
+
 
     // Azure requires training_type: "global" — there is no strongly-typed property
     // for this on FineTuningOptions, so we send the request via BinaryContent and

@@ -41,7 +41,7 @@ Console.WriteLine($"Dataset: {datasetPath}\n");
 
 #region Client creation
 
-var credential = new DefaultAzureCredential();
+var credential = new AzureCliCredential();
 var projectClient = new AIProjectClient(projectEndpoint, credential);
 
 var oaiClient = projectClient.ProjectOpenAIClient;
