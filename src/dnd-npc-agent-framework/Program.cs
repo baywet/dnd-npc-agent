@@ -42,8 +42,10 @@ using Azure.Identity;
 using DotNetEnv;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Foundry.Hosting;
+using Microsoft.Extensions.AI;
 
 // Load environment variables from a .env file if present (for local development).
+
 Env.NoClobber().TraversePath().Load();
 
 if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING")))
@@ -67,10 +69,32 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
         model: deployment,
         instructions: "You are a helpful AI assistant. Be concise and informative.",
         name: "dnd-npc-agent",
-        description: "A minimal Hello World agent using the Agent Framework");
+        description: "A minimal Hello World agent using the Agent Framework",
+        tools:
+        [
+            AIFunctionFactory.Create(ThrowDie, "ThrowDie",
+                "Throws a die and returns the result. Specify the number of sides on the die (e.g., 20 for d20, 6 for d6). Optionally add a modifier to be applied to the roll.")
+        ]);
+
+#region DEMO1LOCAL_TOOL
+
+static string ThrowDie(int sides = 20, int? modifier = null)
+{
+    if (sides <= 0)
+        return "Error: Die must have at least 1 side.";
+
+    var random = new Random();
+    int result = random.Next(1, sides + 1);
+
+    string diceNotation = modifier.HasValue ? $"d{sides} + {modifier}" : $"d{sides}";
+    int finalResult = modifier.HasValue ? result + modifier.Value : result;
+
+    return $"🎲 Threw a {diceNotation}: **{finalResult}**";
+}
+#endregion
 
 // AgentHost.CreateBuilder() auto-configures:
-//   - Kestrel on port 8088 (or the PORT environment variable)
+//   - Kestrel on port 8088 (or the PORT environment variable)hello-world
 //   - GET /readiness health probe
 //   - OpenTelemetry traces and metrics
 //   - x-platform-server response header
