@@ -36,9 +36,11 @@
  *     -d '{"input": "Can you summarize that?", "previous_response_id": "<id>", "stream": false}' | jq .
  */
 
+using System.Diagnostics;
 using Azure.AI.AgentServer.Core;
 using Azure.AI.Projects;
 using Azure.Identity;
+using DnDNpcAgent;
 using DotNetEnv;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Foundry.Hosting;
@@ -62,6 +64,12 @@ var projectEndpoint = new Uri(Environment.GetEnvironmentVariable("FOUNDRY_PROJEC
 var deployment = Environment.GetEnvironmentVariable("AZURE_AI_MODEL_DEPLOYMENT_NAME")
     ?? throw new InvalidOperationException("AZURE_AI_MODEL_DEPLOYMENT_NAME environment variable is not set.");
 
+using var activitySource = new ActivitySource("dnd-npc-agent-framework-local-tools");
+var localTools = new LocalTools
+{
+    ActivitySource = activitySource
+};
+
 // Create an AIAgent backed by a Foundry model.
 // The agent framework manages the LLM call, conversation sessions, and response lifecycle.
 AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential())
@@ -72,26 +80,10 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
         description: "A minimal Hello World agent using the Agent Framework",
         tools:
         [
-            AIFunctionFactory.Create(ThrowDie, "ThrowDie",
-                "Throws a die and returns the result. Specify the number of sides on the die (e.g., 20 for d20, 6 for d6). Optionally add a modifier to be applied to the roll.")
+            AIFunctionFactory.Create(localTools.ThrowDie)
         ]);
 
-#region DEMO1LOCAL_TOOL
 
-static string ThrowDie(int sides = 20, int? modifier = null)
-{
-    if (sides <= 0)
-        return "Error: Die must have at least 1 side.";
-
-    var random = new Random();
-    int result = random.Next(1, sides + 1);
-
-    string diceNotation = modifier.HasValue ? $"d{sides} + {modifier}" : $"d{sides}";
-    int finalResult = modifier.HasValue ? result + modifier.Value : result;
-
-    return $"🎲 Threw a {diceNotation}: **{finalResult}**";
-}
-#endregion
 
 // AgentHost.CreateBuilder() auto-configures:
 //   - Kestrel on port 8088 (or the PORT environment variable)hello-world
