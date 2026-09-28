@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/src/dnd-npc-agent-framework/bin/Debug/net10.0/dnd-npc-agent-framework.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "env": {
+                "DOTNET_ENVIRONMENT": "Development",
+                "FOUNDRY_PROJECT_ENDPOINT": "https://vibiret-onstage-demos.services.ai.azure.com/api/projects/proj-default"
+            },
+            "envFile": "${workspaceFolder}/.azure/dnd-npc-agent-framework/.env"
+        }
+    ]
+}
