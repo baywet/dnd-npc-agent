@@ -5,6 +5,8 @@ namespace DnDNpcAgent;
 
 internal class LocalTools
 {
+	public const string ActivitySourceName = "dnd-npc-agent-framework-local-tools";
+
 	public required ActivitySource ActivitySource { private get; init; }
 
 	#region DEMO1LOCAL_TOOL

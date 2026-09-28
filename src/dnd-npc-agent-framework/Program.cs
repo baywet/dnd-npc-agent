@@ -64,7 +64,7 @@ var projectEndpoint = new Uri(Environment.GetEnvironmentVariable("FOUNDRY_PROJEC
 var deployment = Environment.GetEnvironmentVariable("AZURE_AI_MODEL_DEPLOYMENT_NAME")
     ?? throw new InvalidOperationException("AZURE_AI_MODEL_DEPLOYMENT_NAME environment variable is not set.");
 
-using var activitySource = new ActivitySource("dnd-npc-agent-framework-local-tools");
+using var activitySource = new ActivitySource(LocalTools.ActivitySourceName);
 var localTools = new LocalTools
 {
     ActivitySource = activitySource
@@ -91,6 +91,9 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
 //   - OpenTelemetry traces and metrics
 //   - x-platform-server response header
 var builder = AgentHost.CreateBuilder(args);
+builder.Services
+    .AddOpenTelemetry()
+    .WithTracing(tracing => tracing.AddSource(LocalTools.ActivitySourceName));
 builder.Services.AddFoundryResponses(agent);
 builder.RegisterProtocol("responses", endpoints => endpoints.MapFoundryResponses());
 
