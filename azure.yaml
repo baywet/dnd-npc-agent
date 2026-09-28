@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+requiredVersions:
+    azd: '>=1.27.1'
+    extensions:
+        azure.ai.agents: '>=1.0.0-beta.16'
+name: dnd-npc-agent-framework
+services:
+    ai-project:
+        host: azure.ai.project
+        deployments:
+            - model:
+                format: OpenAI
+                name: gpt-5.4-mini
+                version: "2026-03-17"
+              name: gpt-5.4-mini
+              sku:
+                capacity: 10
+                name: GlobalStandard
+        endpoint: https://vibiret-onstage-demos.services.ai.azure.com/api/projects/proj-default
+    dnd-npc-agent-framework:
+        project: src/dnd-npc-agent-framework
+        host: azure.ai.agent
+        language: csharp
+        docker:
+            path: Dockerfile
+            remoteBuild: true
+        uses:
+            - ai-project
+        env:
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+        codeConfiguration:
+            entryPoint: dnd-npc-agent-framework.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        description: Minimal Hello World agent using the Responses protocol with the Agent Framework approach in C#. Uses Microsoft.Agents.AI to create an AIAgent backed by a Foundry model, hosted via AgentHost.CreateBuilder() for automatic port, health, and telemetry configuration.
+        displayName: Hello World (.NET, Agent Framework)
+        kind: hosted
+        metadata:
+            tags:
+                - AI Agent Hosting
+                - Responses Protocol
+                - Agent Framework
+                - .NET
+        name: dnd-npc-agent-framework
+        protocols:
+            - protocol: responses
+              version: 2.0.0
+infra:
+    provider: microsoft.foundry
