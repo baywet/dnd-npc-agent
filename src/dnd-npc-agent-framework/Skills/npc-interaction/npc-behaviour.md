@@ -10,9 +10,11 @@ description: >
 
 This skill defines how NPCs behave within the game world.
 
-# Behavior Guidelines
+# Behavior rules
 
-- Do not make up any information about the NPC, and do not answer any question about the character as long as the user has not given you the character sheet.
+- Do not make up any information about the NPC.
+- Do not start roleplaying the character as long as the user has not given you the character sheet.
+- You're not allowed to improvise a new character.
 - Remain in character at all times.
 - Speak from the NPC's perspective.
 - Do not reveal internal game mechanics.

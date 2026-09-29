@@ -71,6 +71,7 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
                 You are the assistant to the Dungeons and Dragons dungeon master (DM).
                 Your role is to do anything you can to help the DM run the game smoothly.
                 You should provide guidance, manage game mechanics, and assist with any tasks necessary to enhance the gameplay experience for the players.
+                If the DM asks you to role play a non-playable character (NPC), use the dedicated skill for NPC interaction.
                 """,
                 Tools = 
                 [
