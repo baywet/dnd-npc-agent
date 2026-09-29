@@ -1,41 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-/*
- * Hello World — Agent Framework Responses agent for C#
- *
- * Minimal hosted agent that uses the Microsoft Agent Framework (Microsoft.Agents.AI)
- * to create an AIAgent backed by a Foundry model, then hosts it using AgentHost.CreateBuilder()
- * from Azure.AI.AgentServer.Core with AddFoundryResponses from Microsoft.Agents.AI.Foundry.Hosting.
- *
- * This sample demonstrates the simplest possible Agent Framework integration: the agent
- * framework manages the LLM call, conversation history, and response lifecycle automatically —
- * there is no ResponseHandler subclass to implement. AgentHost.CreateBuilder() handles the
- * HTTP contract, port binding, health probes, SSE lifecycle, and OpenTelemetry tracing.
- *
- * Multi-turn conversation works automatically: on each request the framework calls
- * GetHistoryAsync() internally to build the conversation history from prior turns.
- * Pass previous_response_id from one response as the input to the next call to maintain
- * conversation context. Locally, history is stored in-process (lost on restart); when
- * hosted by Foundry (FOUNDRY_HOSTING_ENVIRONMENT set), it uses durable server-side storage.
- *
- * Required environment variables:
- *   FOUNDRY_PROJECT_ENDPOINT  — Foundry project endpoint (auto-injected in hosted containers)
- *   AZURE_AI_MODEL_DEPLOYMENT_NAME     — Model deployment name (declared in agent.manifest.yaml)
- *
- * Usage:
- *   dotnet run
- *
- *   # Turn 1 — invoke the agent:
- *   curl -sS -X POST http://localhost:8088/responses \
- *     -H "Content-Type: application/json" \
- *     -d '{"input": "What is Microsoft Foundry?", "stream": false}' | jq .
- *
- *   # Turn 2 — follow up using the id from the previous response:
- *   curl -sS -X POST http://localhost:8088/responses \
- *     -H "Content-Type: application/json" \
- *     -d '{"input": "Can you summarize that?", "previous_response_id": "<id>", "stream": false}' | jq .
- */
-
 using System.Diagnostics;
 using Azure.AI.AgentServer.Core;
 using Azure.AI.Projects;
@@ -47,6 +11,7 @@ using Microsoft.Agents.AI.Foundry.Hosting;
 using Microsoft.Extensions.AI;
 
 // Load environment variables from a .env file if present (for local development).
+#region environment_init
 
 Env.NoClobber().TraversePath().Load();
 
@@ -64,34 +29,59 @@ var projectEndpoint = new Uri(Environment.GetEnvironmentVariable("FOUNDRY_PROJEC
 var deployment = Environment.GetEnvironmentVariable("AZURE_AI_MODEL_DEPLOYMENT_NAME")
     ?? throw new InvalidOperationException("AZURE_AI_MODEL_DEPLOYMENT_NAME environment variable is not set.");
 
+using var cancellationTokenSource = new CancellationTokenSource();
+Console.CancelKeyPress += (_, eventArgs) =>
+{
+    eventArgs.Cancel = true;
+    cancellationTokenSource.Cancel();
+};
+AppDomain.CurrentDomain.ProcessExit += (_, _) => cancellationTokenSource.Cancel();
+
+var cancellationToken = cancellationTokenSource.Token;
+
+#endregion
+
+
+#region local_tools_init
 using var activitySource = new ActivitySource(LocalTools.ActivitySourceName);
 var localTools = new LocalTools
 {
     ActivitySource = activitySource
 };
+#endregion
 
+#region skills_init
+var skillProvider = new AgentSkillsProvider(Path.Combine(AppContext.BaseDirectory, "Skills", "npc-interaction"));
+#endregion
+
+#region agent_init
 // Create an AIAgent backed by a Foundry model.
 // The agent framework manages the LLM call, conversation sessions, and response lifecycle.
 AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential())
     .AsAIAgent(
-        model: deployment,
-        instructions:
-        """
-        You are an animator of Non-Playable-Characters (NPCs) for Dungeons and Dragons play sessions.
-        Your role is to bring NPCs to life by providing engaging dialogue, personality, and reactions.
-        Use the available die-rolling tool to resolve uncertain outcomes and add randomness to interactions.
-        Make the game more interactive and fun for all players.
-        Whenever a user starts a conversation, ask for the NPC character sheet.
-        Do not make up any information about the NPC, and do not answer any question about the character as long as the user has not given you the character sheet.
-        """,
-        name: "dnd-npc-agent",
-        description: "A D&D NPC agent that animates Non-Playable-Characters with die rolling capabilities",
-        tools:
-        [
-            AIFunctionFactory.Create(localTools.ThrowDie)
-        ]);
-
-
+        options: new ChatClientAgentOptions
+        {
+            Name = "dnd-npc-agent",
+            Description = "A D&D NPC agent that animates Non-Playable-Characters with die rolling capabilities",
+            ChatOptions = new ChatOptions
+            {
+                ModelId = deployment,
+                Instructions =
+                """
+                You are the assistant to the Dungeons and Dragons dungeon master (DM).
+                Your role is to do anything you can to help the DM run the game smoothly.
+                You should provide guidance, manage game mechanics, and assist with any tasks necessary to enhance the gameplay experience for the players.
+                """,
+                Tools = 
+                [
+                    AIFunctionFactory.Create(localTools.ThrowDie)
+                ]
+            },
+            AIContextProviders =
+            [
+                skillProvider
+            ]
+        });
 
 // AgentHost.CreateBuilder() auto-configures:
 //   - Kestrel on port 8088 (or the PORT environment variable)hello-world
@@ -106,4 +96,6 @@ builder.Services.AddFoundryResponses(agent);
 builder.RegisterProtocol("responses", endpoints => endpoints.MapFoundryResponses());
 
 var app = builder.Build();
-app.Run();
+await app.RunAsync(cancellationToken);
+
+#endregion
