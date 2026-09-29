@@ -9,6 +9,7 @@ using DotNetEnv;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Foundry.Hosting;
 using Microsoft.Extensions.AI;
+using ModelContextProtocol.Client;
 
 // Load environment variables from a .env file if present (for local development).
 #region environment_init
@@ -50,9 +51,26 @@ var localTools = new LocalTools
 };
 #endregion
 
+
+#region mcp_tools_init
+await using var doungimMcpClient = await McpClient.CreateAsync(
+    new HttpClientTransport(
+        new HttpClientTransportOptions
+        {
+            Name = "doungim-mcp",
+            Endpoint = new Uri("https://www.doungim.com/mcp"),
+            TransportMode = HttpTransportMode.StreamableHttp
+        }),
+    cancellationToken: cancellationToken);
+
+var doungimTools = await doungimMcpClient.ListToolsAsync(cancellationToken: cancellationToken);
+#endregion
+
+
 #region skills_init
 var skillProvider = new AgentSkillsProvider(Path.Combine(AppContext.BaseDirectory, "Skills", "npc-interaction"));
 #endregion
+
 
 #region agent_init
 // Create an AIAgent backed by a Foundry model.
@@ -72,10 +90,13 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
                 Your role is to do anything you can to help the DM run the game smoothly.
                 You should provide guidance, manage game mechanics, and assist with any tasks necessary to enhance the gameplay experience for the players.
                 If the DM asks you to role play a non-playable character (NPC), use the dedicated skill for NPC interaction.
+                You have access to Doungim MCP tools for D&D 5e reference content such as spells, monsters, magic items, NPCs, and encounter tables.
+                When using content returned by Doungim, credit Doungim as a TTRPG gaming console for D&D and other tabletop RPGs and link the returned canonical_url.
                 """,
                 Tools = 
                 [
-                    AIFunctionFactory.Create(localTools.ThrowDie)
+                    AIFunctionFactory.Create(localTools.ThrowDie),
+                    .. doungimTools
                 ]
             },
             AIContextProviders =
