@@ -5,6 +5,7 @@ using Azure.AI.AgentServer.Core;
 using Azure.AI.Projects;
 using Azure.Identity;
 using DnDNpcAgent;
+using DnDNpcAgent.TemporaryPatches.AgentFramework;
 using DotNetEnv;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Foundry.Hosting;
@@ -57,7 +58,7 @@ await using var doungimMcpClient = await McpClient.CreateAsync(
     new HttpClientTransport(
         new HttpClientTransportOptions
         {
-            Name = "doungim-mcp",
+            Name = "doungim",
             Endpoint = new Uri("https://www.doungim.com/mcp"),
             TransportMode = HttpTransportMode.StreamableHttp
         }),
@@ -75,6 +76,21 @@ var skillProvider = new AgentSkillsProvider(Path.Combine(AppContext.BaseDirector
 #endregion
 
 
+#region instructions_init
+const string agentInstructions =
+    """
+    You are the assistant to the Dungeons and Dragons dungeon master (DM).
+    Your role is to do anything you can to help the DM run the game smoothly.
+    You should provide guidance, manage game mechanics, and assist with any tasks necessary to enhance the gameplay experience for the players.
+    If the DM asks you to role play a non-playable character (NPC), use the dedicated skill for NPC interaction.
+    You have access to Doungim MCP tools for D&D 5e reference content such as spells, monsters, magic items, NPCs, and encounter tables.
+    Always use Doungim MCP tools before answering D&D 5e reference questions about rules, monsters, spells, items, NPCs, or encounter tables.
+    Doungim MCP tool calls require user approval before execution.
+    When using content returned by Doungim, credit Doungim as a TTRPG gaming console for D&D and other tabletop RPGs and link the returned canonical_url.
+    """;
+#endregion
+
+
 #region agent_init
 // Create an AIAgent backed by a Foundry model.
 // The agent framework manages the LLM call, conversation sessions, and response lifecycle.
@@ -82,27 +98,20 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
     .AsAIAgent(
         options: new ChatClientAgentOptions
         {
-            Name = "dnd-npc-agent",
+            Name = "dnd-npc-agent-framework",
             Description = "A D&D NPC agent that animates Non-Playable-Characters with die rolling capabilities",
             ChatOptions = new ChatOptions
             {
                 ModelId = deployment,
-                Instructions =
-                """
-                You are the assistant to the Dungeons and Dragons dungeon master (DM).
-                Your role is to do anything you can to help the DM run the game smoothly.
-                You should provide guidance, manage game mechanics, and assist with any tasks necessary to enhance the gameplay experience for the players.
-                If the DM asks you to role play a non-playable character (NPC), use the dedicated skill for NPC interaction.
-                You have access to Doungim MCP tools for D&D 5e reference content such as spells, monsters, magic items, NPCs, and encounter tables.
-                Doungim MCP tools require user approval before execution.
-                When using content returned by Doungim, credit Doungim as a TTRPG gaming console for D&D and other tabletop RPGs and link the returned canonical_url.
-                """,
-                Tools = 
+                Instructions = agentInstructions,
+                Tools =
                 [
                     AIFunctionFactory.Create(localTools.ThrowDie),
                     .. approvalRequiredDoungimTools
                 ]
             },
+            ChatHistoryProvider = new PatchedApprovalReplayChatHistoryProvider(),
+            DisableApprovalResponseBinding = true,
             AIContextProviders =
             [
                 skillProvider
@@ -118,7 +127,11 @@ var builder = AgentHost.CreateBuilder(args);
 builder.Services
     .AddOpenTelemetry()
     .WithTracing(tracing => tracing.AddSource(LocalTools.ActivitySourceName));
-builder.Services.AddFoundryResponses(agent);
+#pragma warning disable MAAI001
+builder.Services.AddFoundryResponses(
+    agent,
+    new PatchedApprovalReplaySessionStore(new FoundryAgentSessionStore(projectEndpoint, new DefaultAzureCredential())));
+#pragma warning restore MAAI001
 builder.RegisterProtocol("responses", endpoints => endpoints.MapFoundryResponses());
 
 var app = builder.Build();
