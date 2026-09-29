@@ -15,7 +15,7 @@
                 "DOTNET_ENVIRONMENT": "Development",
                 "FOUNDRY_PROJECT_ENDPOINT": "https://vibiret-onstage-demos.services.ai.azure.com/api/projects/proj-default"
             },
-            "envFile": "${workspaceFolder}/.azure/dnd-npc-agent-framework/.env"
+            "envFile": "${workspaceFolder}/.azure/dnd-npc-agent-agent-framework-dev/.env"
         }
     ]
 }
