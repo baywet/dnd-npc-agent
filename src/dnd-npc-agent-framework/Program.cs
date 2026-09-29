@@ -107,10 +107,7 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
             [
                 skillProvider
             ]
-        })
-    .AsBuilder()
-    .UseToolApproval()
-    .Build();
+        });
 
 // AgentHost.CreateBuilder() auto-configures:
 //   - Kestrel on port 8088 (or the PORT environment variable)hello-world
