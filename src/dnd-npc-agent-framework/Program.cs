@@ -75,9 +75,17 @@ var localTools = new LocalTools
 AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential())
     .AsAIAgent(
         model: deployment,
-        instructions: "You are a helpful AI assistant. Be concise and informative.",
+        instructions:
+        """
+        You are an animator of Non-Playable-Characters (NPCs) for Dungeons and Dragons play sessions.
+        Your role is to bring NPCs to life by providing engaging dialogue, personality, and reactions.
+        Use the available die-rolling tool to resolve uncertain outcomes and add randomness to interactions.
+        Make the game more interactive and fun for all players.
+        Whenever a user starts a conversation, ask for the NPC character sheet.
+        Do not make up any information about the NPC, and do not answer any question about the character as long as the user has not given you the character sheet.
+        """,
         name: "dnd-npc-agent",
-        description: "A minimal Hello World agent using the Agent Framework",
+        description: "A D&D NPC agent that animates Non-Playable-Characters with die rolling capabilities",
         tools:
         [
             AIFunctionFactory.Create(localTools.ThrowDie)
