@@ -64,6 +64,9 @@ await using var doungimMcpClient = await McpClient.CreateAsync(
     cancellationToken: cancellationToken);
 
 var doungimTools = await doungimMcpClient.ListToolsAsync(cancellationToken: cancellationToken);
+var approvalRequiredDoungimTools = doungimTools
+    .Select(tool => new ApprovalRequiredAIFunction(tool))
+    .ToArray();
 #endregion
 
 
@@ -91,19 +94,23 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
                 You should provide guidance, manage game mechanics, and assist with any tasks necessary to enhance the gameplay experience for the players.
                 If the DM asks you to role play a non-playable character (NPC), use the dedicated skill for NPC interaction.
                 You have access to Doungim MCP tools for D&D 5e reference content such as spells, monsters, magic items, NPCs, and encounter tables.
+                Doungim MCP tools require user approval before execution.
                 When using content returned by Doungim, credit Doungim as a TTRPG gaming console for D&D and other tabletop RPGs and link the returned canonical_url.
                 """,
                 Tools = 
                 [
                     AIFunctionFactory.Create(localTools.ThrowDie),
-                    .. doungimTools
+                    .. approvalRequiredDoungimTools
                 ]
             },
             AIContextProviders =
             [
                 skillProvider
             ]
-        });
+        })
+    .AsBuilder()
+    .UseToolApproval()
+    .Build();
 
 // AgentHost.CreateBuilder() auto-configures:
 //   - Kestrel on port 8088 (or the PORT environment variable)hello-world
