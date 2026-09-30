@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using Azure.AI.AgentServer.Core;
 using Azure.AI.Projects;
+using Azure.AI.Projects.Memory;
 using Azure.Identity;
 using DnDNpcAgent;
 using DnDNpcAgent.TemporaryPatches.AgentFramework;
@@ -11,7 +12,9 @@ using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Foundry;
 using Microsoft.Agents.AI.Foundry.Hosting;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Client;
+using OpenAI.Responses;
 
 // Load environment variables from a .env file if present (for local development).
 #region environment_init
@@ -98,12 +101,29 @@ var projectClient = new AIProjectClient(projectEndpoint, new DefaultAzureCredent
 
 #region memory_provider_init
 #pragma warning disable MAAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#if DEBUG
+const string memoryScope = "sample-user-123";
+using ILoggerFactory memoryLoggerFactory = LoggerFactory.Create(logging =>
+{
+    logging
+        .AddSimpleConsole(options => options.SingleLine = true)
+        .SetMinimumLevel(LogLevel.Debug);
+});
+
 FoundryMemoryProvider memoryProvider = new(
     projectClient,
     memoryStoreName,
-#if DEBUG
-    stateInitializer: _ => new(new FoundryMemoryProviderScope("sample-user-123")));
+    stateInitializer: _ => new(new FoundryMemoryProviderScope(memoryScope)),
+    options: new FoundryMemoryProviderOptions { UpdateDelay = 0 },
+    loggerFactory: memoryLoggerFactory);
+
+Console.Error.WriteLine(
+    $"[MEMORY DEBUG] Store='{memoryStoreName}', Scope='{memoryScope}', " +
+    $"ChatModel='{deployment}', EmbeddingModel='{embeddingModelName}'.");
 #else
+FoundryMemoryProvider memoryProvider = new(
+    projectClient,
+    memoryStoreName,
     stateInitializer: HostedFoundryMemoryProviderScopes.PerUser());
 #endif
 
@@ -175,6 +195,48 @@ builder.Services.AddFoundryResponses(
 #pragma warning restore MAAI001
 #endregion
 builder.RegisterProtocol("responses", endpoints => endpoints.MapFoundryResponses());
+
+#if DEBUG
+#pragma warning disable AAIP001, OPENAI001 // Preview APIs used only by the local memory diagnostics endpoint.
+builder.RegisterProtocol("memory-debug", endpoints => endpoints.MapGet("/debug/memory", async (
+    string? query,
+    CancellationToken requestCancellationToken) =>
+{
+    await memoryProvider.WhenUpdatesCompletedAsync(
+        pollingInterval: TimeSpan.FromSeconds(1),
+        cancellationToken: requestCancellationToken);
+
+    MemorySearchOptions searchOptions = new(memoryScope);
+
+    if (!string.IsNullOrWhiteSpace(query))
+    {
+        searchOptions.Items.Add(ResponseItem.CreateUserMessageItem(query));
+    }
+
+    MemoryStoreSearchResponse searchResult = (await projectClient.MemoryStores.SearchMemoriesAsync(
+        memoryStoreName,
+        searchOptions,
+        requestCancellationToken)).Value;
+
+    return Results.Ok(new
+    {
+        Store = memoryStoreName,
+        Scope = memoryScope,
+        Query = query,
+        Count = searchResult.Memories.Count,
+        Memories = searchResult.Memories.Select(memory => new
+        {
+            Id = memory.MemoryItem?.MemoryId,
+            Content = memory.MemoryItem?.Content
+        })
+    });
+}));
+#pragma warning restore AAIP001, OPENAI001
+
+Console.Error.WriteLine(
+    "[MEMORY DEBUG] Inspect stored memories at " +
+    "GET /debug/memory?query=<relevant memory question>.");
+#endif
 
 var app = builder.Build();
 await app.RunAsync(cancellationToken);
