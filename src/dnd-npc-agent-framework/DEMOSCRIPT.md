@@ -25,6 +25,7 @@
 1. Ask `hello what can you do`.
 1. Show the code for the agent definition to set the stage.
 1. Mention the response protocol mapping.
+1. Mention the agent has been deployed to Foundry using `azd up` and is running locally too.
 
 ### Local tool
 
