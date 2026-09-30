@@ -17,6 +17,14 @@ services:
               sku:
                 capacity: 10
                 name: GlobalStandard
+            - model:
+                format: OpenAI
+                name: text-embedding-3-large
+                version: "1"
+              name: text-embedding-3-large
+              sku:
+                capacity: 10
+                name: GlobalStandard
         endpoint: https://vibiret-onstage-demos.services.ai.azure.com/api/projects/proj-default
     dnd-npc-agent-framework:
         project: src/dnd-npc-agent-framework
