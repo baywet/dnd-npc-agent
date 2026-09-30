@@ -8,6 +8,7 @@ using DnDNpcAgent;
 using DnDNpcAgent.TemporaryPatches.AgentFramework;
 using DotNetEnv;
 using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Foundry;
 using Microsoft.Agents.AI.Foundry.Hosting;
 using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
@@ -24,6 +25,9 @@ if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS
         "to Application Insights. Set it to enable local telemetry. " +
         "(This variable is auto-injected in hosted Foundry containers — do not declare it in agent.manifest.yaml.)");
 }
+
+var memoryStoreName = Environment.GetEnvironmentVariable("AZURE_AI_MEMORY_STORE_ID") ?? "memory-store-sample";
+string embeddingModelName = Environment.GetEnvironmentVariable("AZURE_AI_EMBEDDING_DEPLOYMENT_NAME") ?? "text-embedding-ada-002";
 
 var projectEndpoint = new Uri(Environment.GetEnvironmentVariable("FOUNDRY_PROJECT_ENDPOINT")
     ?? throw new InvalidOperationException("FOUNDRY_PROJECT_ENDPOINT environment variable is not set."));
@@ -90,11 +94,40 @@ const string agentInstructions =
     """;
 #endregion
 
+var projectClient = new AIProjectClient(projectEndpoint, new DefaultAzureCredential());
+
+#region memory_provider_init
+#pragma warning disable MAAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+FoundryMemoryProvider memoryProvider = new(
+    projectClient,
+    memoryStoreName,
+#if DEBUG
+    stateInitializer: _ => new(new FoundryMemoryProviderScope("sample-user-123")));
+#else
+    stateInitializer: HostedFoundryMemoryProviderScopes.PerUser());
+#endif
+
+await memoryProvider.EnsureMemoryStoreCreatedAsync(deployment, embeddingModelName, "Memory store for D&D NPC agent", cancellationToken).ConfigureAwait(false);
+#pragma warning restore MAAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+// every 3 seconds, save the memories on a separate background task.
+// this is for demo only and is not needed in production.
+// essentially we want to save as fast as possible so we can demo the memories on the next turn.
+_ = Task.Run(async () =>
+{
+    while (true)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
+        await memoryProvider.WhenUpdatesCompletedAsync(cancellationToken: cancellationToken);
+    }
+}, cancellationToken);
+#endregion
+
 
 #region agent_init
 // Create an AIAgent backed by a Foundry model.
 // The agent framework manages the LLM call, conversation sessions, and response lifecycle.
-AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential())
+AIAgent agent = projectClient
     .AsAIAgent(
         options: new ChatClientAgentOptions
         {
@@ -110,13 +143,14 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
                     .. approvalRequiredDoungimTools
                 ]
             },
-#region additional_bug_magic
+            #region additional_bug_magic
             ChatHistoryProvider = new PatchedApprovalReplayChatHistoryProvider(),
             DisableApprovalResponseBinding = true,
-#endregion
+            #endregion
             AIContextProviders =
             [
-                skillProvider
+                skillProvider,
+                memoryProvider
             ]
         });
 
