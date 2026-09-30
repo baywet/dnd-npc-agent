@@ -239,6 +239,13 @@ Console.Error.WriteLine(
 #endif
 
 var app = builder.Build();
+#if DEBUG
+app.MapDebugMemoryClearEndpoint(async requestCancellationToken =>
+{
+    AgentSession debugSession = await agent.CreateSessionAsync(requestCancellationToken);
+    await memoryProvider.EnsureStoredMemoriesDeletedAsync(debugSession, requestCancellationToken);
+});
+#endif
 await app.RunAsync(cancellationToken);
 
 #endregion
