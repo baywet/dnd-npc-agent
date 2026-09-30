@@ -76,7 +76,13 @@ var approvalRequiredDoungimTools = doungimTools
 
 
 #region skills_init
-var skillProvider = new AgentSkillsProvider(Path.Combine(AppContext.BaseDirectory, "Skills", "npc-interaction"));
+var skillProvider = new AgentSkillsProvider(
+    Path.Combine(AppContext.BaseDirectory, "Skills"),
+    options: new AgentSkillsProviderOptions
+    {
+        DisableLoadSkillApproval = true,
+        DisableReadSkillResourceApproval = true
+    });
 #endregion
 
 
@@ -86,7 +92,8 @@ const string agentInstructions =
     You are the assistant to the Dungeons and Dragons dungeon master (DM).
     Your role is to do anything you can to help the DM run the game smoothly.
     You should provide guidance, manage game mechanics, and assist with any tasks necessary to enhance the gameplay experience for the players.
-    If the DM asks you to role play a non-playable character (NPC), use the dedicated skill for NPC interaction.
+    If the DM asks you to impersonate, portray, roleplay, speak as, or act as a non-playable character (NPC), creature, or monster, you must load and follow the npc-behaviour skill before answering.
+    Do not begin NPC impersonation until the npc-behaviour skill has been loaded and its initialization instructions have been followed.
     You have access to Doungim MCP tools for D&D 5e reference content such as spells, monsters, magic items, NPCs, and encounter tables.
     Always use Doungim MCP tools before answering D&D 5e reference questions about rules, monsters, spells, items, NPCs, or encounter tables.
     Doungim MCP tool calls require user approval before execution.

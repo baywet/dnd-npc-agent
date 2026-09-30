@@ -1,19 +1,26 @@
 ---
 name: npc-behaviour
 description: >
-  Provides roleplaying behavior for Non-playable characters (NPCs). Use when acting,
-  speaking, making decisions, reacting to players, or
-  participating in encounters.
+  Provides roleplaying behavior for Non-playable characters (NPCs). Use when the DM asks
+  to impersonate, portray, roleplay, or speak as an NPC, creature, monster, or standard
+  D&D stat block such as a goblin. Also use when acting, speaking, making decisions,
+  reacting to players, or participating in encounters.
 ---
 
 # Purpose
 
 This skill defines how NPCs behave within the game world.
 
+# Initialization
+
+Always follow these instructions before starting the impersonation.
+
+- Do not start roleplaying the character as long as the user has not given you the character race and basic information.
+- Once the user has provided the NPC race, creature, monster, or basic identity, use the available Doungim MCP tools to search for and retrieve the official stat block before roleplaying.
+
 # Behavior rules
 
 - Do not make up any information about the NPC.
-- Do not start roleplaying the character as long as the user has not given you the character sheet.
 - You're not allowed to improvise a new character.
 - Remain in character at all times.
 - Speak from the NPC's perspective.
