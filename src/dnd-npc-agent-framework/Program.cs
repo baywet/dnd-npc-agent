@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
+using System.ClientModel.Primitives;
 using Azure.AI.AgentServer.Core;
 using Azure.AI.Projects;
 using Azure.Identity;
@@ -13,6 +14,7 @@ using Microsoft.Agents.AI.Foundry.Hosting;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using ModelContextProtocol.Client;
+using OpenAI;
 
 // Load environment variables from a .env file if present (for local development).
 #region environment_init
@@ -27,9 +29,20 @@ if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS
         "(This variable is auto-injected in hosted Foundry containers — do not declare it in agent.manifest.yaml.)");
 }
 
-var  embeddingModelName = Environment.GetEnvironmentVariable("AZURE_AI_EMBEDDING_DEPLOYMENT_NAME") ?? "text-embedding-ada-002";
+var embeddingModelName = Environment.GetEnvironmentVariable("FOUNDRY_EMBEDDING_MODEL") ?? "text-embedding-3-large";
+var embeddingVectorDimensions = embeddingModelName switch
+{
+    "text-embedding-ada-002" => 1536,
+    "text-embedding-3-small" => 1536,
+    "text-embedding-3-large" => 3072,
+    _ => throw new InvalidOperationException(
+        $"The vector dimensions for embedding deployment '{embeddingModelName}' are unknown.")
+};
+
 var projectEndpoint = new Uri(Environment.GetEnvironmentVariable("FOUNDRY_PROJECT_ENDPOINT")
     ?? throw new InvalidOperationException("FOUNDRY_PROJECT_ENDPOINT environment variable is not set."));
+var embeddingEndpoint = new Uri(
+    $"https://{projectEndpoint.Host.Split('.')[0]}.cognitiveservices.azure.com/openai/v1/");
 
 var deployment = Environment.GetEnvironmentVariable("AZURE_AI_MODEL_DEPLOYMENT_NAME")
     ?? throw new InvalidOperationException("AZURE_AI_MODEL_DEPLOYMENT_NAME environment variable is not set.");
@@ -93,34 +106,45 @@ const string agentInstructions =
     """;
 #endregion
 
-var projectClient = new AIProjectClient(projectEndpoint, new DefaultAzureCredential());
+var credential = new DefaultAzureCredential();
+var projectClient = new AIProjectClient(projectEndpoint, credential);
 
 #region memory_init
+#pragma warning disable OPENAI001 // Bearer-token authentication constructor is experimental.
 VectorStore vectorStore = new InMemoryVectorStore(new InMemoryVectorStoreOptions()
 {
     // WARNING: DefaultAzureCredential is convenient for development but requires careful consideration in production.
     // In production, consider using a specific credential (e.g., ManagedIdentityCredential) to avoid
     // latency issues, unintended credential probing, and potential security risks from fallback mechanisms.
-    EmbeddingGenerator = projectClient
-        .GetProjectOpenAIClient()
+    EmbeddingGenerator = new OpenAIClient(
+        new BearerTokenPolicy(credential, "https://ai.azure.com/.default"),
+        new OpenAIClientOptions { Endpoint = embeddingEndpoint })
         .GetEmbeddingClient(embeddingModelName)
         .AsIEmbeddingGenerator()
 });
+#pragma warning restore OPENAI001
+
 var historyProvider = new ChatHistoryMemoryProvider(
     vectorStore,
     collectionName: "chathistory",
-    vectorDimensions: 3072,
+    vectorDimensions: embeddingVectorDimensions,
     // Callback to configure the initial state of the ChatHistoryMemoryProvider.
     // The ChatHistoryMemoryProvider stores its state in the AgentSession and this callback
     // will be called whenever the ChatHistoryMemoryProvider cannot find existing state in the session,
     // typically the first time it is used with a new session.
-    session => new ChatHistoryMemoryProvider.State(
-        // Configure the scope values under which chat messages will be stored.
-        // In this case, we are using a fixed user ID and a unique session ID for each new session.
-        storageScope: new() { UserId = "UID1", SessionId = Guid.NewGuid().ToString() },
-        // Configure the scope which would be used to search for relevant prior messages.
-        // In this case, we are searching for any messages for the user across all sessions.
-        searchScope: new() { UserId = "UID1" }));
+    stateInitializer: session =>
+    {
+#if DEBUG
+        const string userId = "sample-user-123";
+#else
+        string userId = session?.GetHostedContext()?.UserId
+            ?? throw new InvalidOperationException("The hosted user identity is unavailable.");
+#endif
+
+        return new ChatHistoryMemoryProvider.State(
+            storageScope: new() { UserId = userId, SessionId = Guid.NewGuid().ToString() },
+            searchScope: new() { UserId = userId });
+    });
 #endregion
 
 
