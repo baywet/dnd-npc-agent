@@ -10,6 +10,8 @@
 
   <ItemGroup>
     <!-- Agent Framework hosting — provides AgentHost, AddFoundryResponses, MapFoundryResponses -->
+    <PackageReference Include="Azure.Core" Version="1.63.0" />
+    <PackageReference Include="CommunityToolkit.VectorData.InMemory" Version="1.0.1" />
     <PackageReference Include="Microsoft.Agents.AI.Foundry.Hosting" Version="1.23.0-preview.260928.1" />
     <!-- Foundry SDK — provides AIProjectClient and AsAIAgent -->
     <PackageReference Include="Azure.AI.Projects" Version="3.0.0-beta.3" />

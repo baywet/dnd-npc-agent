@@ -4,12 +4,14 @@ using System.Diagnostics;
 using Azure.AI.AgentServer.Core;
 using Azure.AI.Projects;
 using Azure.Identity;
+using CommunityToolkit.VectorData.InMemory;
 using DnDNpcAgent;
 using DnDNpcAgent.TemporaryPatches.AgentFramework;
 using DotNetEnv;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Foundry.Hosting;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using ModelContextProtocol.Client;
 
 // Load environment variables from a .env file if present (for local development).
@@ -25,6 +27,7 @@ if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS
         "(This variable is auto-injected in hosted Foundry containers — do not declare it in agent.manifest.yaml.)");
 }
 
+var  embeddingModelName = Environment.GetEnvironmentVariable("AZURE_AI_EMBEDDING_DEPLOYMENT_NAME") ?? "text-embedding-ada-002";
 var projectEndpoint = new Uri(Environment.GetEnvironmentVariable("FOUNDRY_PROJECT_ENDPOINT")
     ?? throw new InvalidOperationException("FOUNDRY_PROJECT_ENDPOINT environment variable is not set."));
 
@@ -90,11 +93,41 @@ const string agentInstructions =
     """;
 #endregion
 
+var projectClient = new AIProjectClient(projectEndpoint, new DefaultAzureCredential());
+
+#region memory_init
+VectorStore vectorStore = new InMemoryVectorStore(new InMemoryVectorStoreOptions()
+{
+    // WARNING: DefaultAzureCredential is convenient for development but requires careful consideration in production.
+    // In production, consider using a specific credential (e.g., ManagedIdentityCredential) to avoid
+    // latency issues, unintended credential probing, and potential security risks from fallback mechanisms.
+    EmbeddingGenerator = projectClient
+        .GetProjectOpenAIClient()
+        .GetEmbeddingClient(embeddingModelName)
+        .AsIEmbeddingGenerator()
+});
+var historyProvider = new ChatHistoryMemoryProvider(
+    vectorStore,
+    collectionName: "chathistory",
+    vectorDimensions: 3072,
+    // Callback to configure the initial state of the ChatHistoryMemoryProvider.
+    // The ChatHistoryMemoryProvider stores its state in the AgentSession and this callback
+    // will be called whenever the ChatHistoryMemoryProvider cannot find existing state in the session,
+    // typically the first time it is used with a new session.
+    session => new ChatHistoryMemoryProvider.State(
+        // Configure the scope values under which chat messages will be stored.
+        // In this case, we are using a fixed user ID and a unique session ID for each new session.
+        storageScope: new() { UserId = "UID1", SessionId = Guid.NewGuid().ToString() },
+        // Configure the scope which would be used to search for relevant prior messages.
+        // In this case, we are searching for any messages for the user across all sessions.
+        searchScope: new() { UserId = "UID1" }));
+#endregion
+
 
 #region agent_init
 // Create an AIAgent backed by a Foundry model.
 // The agent framework manages the LLM call, conversation sessions, and response lifecycle.
-AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential())
+AIAgent agent = projectClient
     .AsAIAgent(
         options: new ChatClientAgentOptions
         {
@@ -116,7 +149,8 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
 #endregion
             AIContextProviders =
             [
-                skillProvider
+                skillProvider,
+                historyProvider
             ]
         });
 
