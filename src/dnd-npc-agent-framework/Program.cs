@@ -201,6 +201,10 @@ builder.Services.AddFoundryResponses(
 builder.RegisterProtocol("responses", endpoints => endpoints.MapFoundryResponses());
 
 var app = builder.Build();
+#if DEBUG
+app.MapDebugMemoryClearEndpoint(
+    requestCancellationToken => vectorStore.EnsureCollectionDeletedAsync("chathistory", requestCancellationToken));
+#endif
 await app.RunAsync(cancellationToken);
 
 #endregion
