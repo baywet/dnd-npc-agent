@@ -1,123 +1,120 @@
-# HelloWorld
+# D&D NPC Agent
 
-A minimal "hello world" hosted agent using the [Agent Framework](https://github.com/microsoft/agent-framework) with the Responses protocol in C#. This is the recommended starting point for understanding how agents are hosted on Foundry.
+This repository contains a Microsoft Foundry hosted agent demo built with the .NET Agent Framework and the Responses protocol. The agent acts as an assistant for a Dungeons & Dragons dungeon master: it can roll dice, look up D&D reference material through an MCP server, load a skill before roleplaying an NPC, and persist useful table preferences in Foundry memory.
+
+The point of the demo is to show how the same hosted agent can combine precise local tools, externally hosted MCP tools, skill-guided behavior, approvals, telemetry, citations, and memory while still being runnable locally and deployable to Foundry.
+
+## What the Demo Shows
+
+1. **Agent definition and hosting**
+   The app creates an `AIAgent` backed by a Foundry model, hosts it with `AgentHost.CreateBuilder`, and exposes the Responses protocol on port `8088`.
+
+2. **Local tool execution**
+   The agent has a local `ThrowDie` tool for dice rolls. The tool is registered directly with the model, does not require approval, and emits custom OpenTelemetry activity tags for the roll notation, result, and die size.
+
+3. **MCP reference tools with approval**
+   The agent connects to the Doungim MCP server for D&D 5e reference content such as monsters, spells, magic items, NPCs, and encounter tables. Those MCP tools are wrapped in approval requirements so a user can inspect and approve access before execution.
+
+4. **Skill-guided NPC roleplay**
+   The `npc-behaviour` skill is loaded before the agent impersonates a creature or NPC. It requires the agent to retrieve the relevant official stat block, stay in character, avoid exposing mechanics while roleplaying, and use dice rolls when outcomes are uncertain.
+
+5. **Persistent memory**
+   The agent uses Foundry memory to remember table preferences, such as favorite NPC voices, across new conversations. In debug builds the app also exposes a memory-clear endpoint for resetting the demo.
+
+## Demo Overview
+
+The demo is intentionally organized around a few Agent Framework capabilities rather than a scripted product tour. The detailed presenter runbook lives in `src/dnd-npc-agent-framework/DEMOSCRIPT.md`; the README keeps the conceptual map:
+
+- **Local tool**: `ThrowDie` is a local C# function exposed to the agent for dice rolls. It demonstrates tightly defined behavior, direct tool registration, and custom telemetry for tool execution.
+- **MCP tool**: The agent connects to the Doungim MCP server for D&D 5e reference data. It demonstrates how a hosted agent can use external capabilities without baking that data or behavior into the app.
+- **Approval flow**: Doungim MCP tools are wrapped as approval-required functions. This demonstrates how user consent fits into tool execution, especially when a tool reaches outside the agent host.
+- **Skill**: The `npc-behaviour` skill gives the model domain-specific guidance for NPC impersonation. It demonstrates how skills can shape broad behavior that is not a single deterministic tool call.
+- **Memory**: Foundry memory stores table preferences across conversations. This demonstrates how an agent can preserve useful user context while keeping the conversational session model clean.
+
+## How It Is Built
+
+The project started from the `azd ai agent init` hosted-agent template using the .NET Hello World Agent Framework option, then was renamed and extended into the D&D demo. The creation flow was:
+
+```shell
+azd ai agent init
+# choose .NET / Hello World / Agent Framework
+# rename the generated project for the D&D NPC agent
+azd up
+```
+
+The main implementation lives in `src/dnd-npc-agent-framework`:
+
+- `Program.cs` wires environment configuration, Foundry credentials, the model-backed `AIAgent`, local tools, MCP tools, skills, memory, telemetry, and Responses protocol hosting.
+- `LocalTools.cs` defines the local dice-rolling tool and emits custom activity tags for tracing.
+- `Skills/npc-interaction/npc-behaviour/SKILL.md` defines the roleplay workflow and guardrails used when the DM asks the agent to impersonate an NPC or creature.
+- `TemporaryPatches/AgentFramework` contains temporary approval replay patches used by this demo.
+- `DEMOSCRIPT.md` contains the short runbook for presenting the demo live.
 
 ## Prerequisites
 
-1. An existing Foundry project with a deployed model (or create them during setup in Option 1).
-2. **[.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)** or later.
+1. [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) or later.
+2. [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) with the Foundry extension.
+3. Azure authentication through `azd auth login` or `az login`.
+4. A Foundry project and model deployment configured through `azure.yaml` and environment variables.
 
-## Option 1: Azure Developer CLI (`azd`)
+Install the Foundry extension if needed:
 
-### Prerequisites
-
-1. **Azure Developer CLI (`azd`)** — [Install azd](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd)
-2. Install the Foundry extension:
-
-   ```bash
-   azd ext install microsoft.foundry
-   ```
-
-3. Authenticate:
-
-   ```bash
-   azd auth login
-   ```
-
-### Initialize the agent project
-
-No cloning required. Create a new folder and initialize from the manifest:
-
-```bash
-mkdir dnd-npc-agent-agent && cd dnd-npc-agent-agent
-azd ai agent init --deploy-mode container -m https://github.com/microsoft-foundry/foundry-samples/blob/main/samples/csharp/hosted-agents/agent-framework/dnd-npc-agent/azure.yaml
+```shell
+azd ext install microsoft.foundry
 ```
 
-Follow the prompts to configure your Foundry project and model deployment. If you don't have an existing Foundry project, `azd ai agent init` will guide you through creating one.
+## Run Locally
 
-### Provision Azure resources (if needed)
+Start the hosted agent locally:
 
-If you don't already have a Foundry project and model deployment:
-
-```bash
-azd provision
-```
-
-### Run the agent locally
-
-```bash
+```shell
 azd ai agent run
 ```
 
-The agent host will start on `http://localhost:8088`.
+The agent host listens on `http://localhost:8088`. You can invoke it from another terminal:
 
-### Invoke the local agent
-
-In a separate terminal, send a request to the agent:
-
-```bash
-azd ai agent invoke --local "What is Microsoft Foundry?"
-azd ai agent invoke --local "Can you summarize that?"
+```shell
+azd ai agent invoke --local "hello what can you do"
 ```
 
-Consecutive invokes reuse the same session automatically.
+You can also run the project directly after restoring dependencies and configuring the required environment variables:
 
-### Deploy to Foundry
-
-Once tested locally, deploy to Microsoft Foundry:
-
-```bash
-azd deploy
+```shell
+dotnet restore
+dotnet run --project src/dnd-npc-agent-framework/dnd-npc-agent-framework.csproj
 ```
 
-For the full deployment guide, see [Deploy a hosted agent](https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/deploy-hosted-agent).
+The app loads a local `.env` file if present. The required values are:
 
-### Invoke the deployed agent
+- `FOUNDRY_PROJECT_ENDPOINT`
+- `AZURE_AI_MODEL_DEPLOYMENT_NAME`
 
-```bash
-azd ai agent invoke "What is Microsoft Foundry?"
+Optional values include:
+
+- `APPLICATIONINSIGHTS_CONNECTION_STRING` for local telemetry export.
+- `AZURE_AI_MEMORY_STORE_ID` to choose the Foundry memory store name.
+- `FOUNDRY_EMBEDDING_MODEL` to choose the embedding model used by memory.
+
+## Deploy
+
+Deploy or update the hosted agent in Foundry with:
+
+```shell
+azd up
 ```
 
-## Option 2: VS Code (Foundry Toolkit)
+After deployment, invoke the hosted agent with:
 
-### Prerequisites
+```shell
+azd ai agent invoke "hello what can you do"
+```
 
-1. **VS Code** with the **[Foundry Toolkit](https://marketplace.visualstudio.com/items?itemName=ms-windows-ai-studio.windows-ai-studio)** extension installed.
-2. [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit) extension.
-3. Command Palette (`Ctrl+Shift+P`) → **C#: Check Workspace Requirements** to confirm the toolchain is ready.
+## Useful Demo Reset
 
-### Run and debug the agent
+In debug builds, clear stored demo memory with:
 
-Press **F5** to start the agent. The agent starts and the **Agent Inspector** opens automatically. Chat with the agent in the Inspector.
+```shell
+curl -i -X DELETE "http://localhost:8088/debug/memory"
+```
 
-### Or run manually, then open the Inspector
-
-1. Restore dependencies:
-
-   ```bash
-   dotnet restore
-   ```
-
-2. Configure the agent: copy `.env.example` to `.env` and fill in the values. The agent loads `.env` automatically on startup.
-
-3. Sign in to Azure with the Azure CLI:
-
-   ```bash
-   az login
-   ```
-
-4. Start the agent (listens on `http://localhost:8088`):
-
-   ```bash
-   dotnet run
-   ```
-
-5. Open the Command Palette (`Ctrl+Shift+P`) → **Foundry Toolkit: Open Agent Inspector**, then send a message to test.
-
-### Deploy to Foundry
-
-1. Open the Command Palette (`Ctrl+Shift+P`) and run **Foundry Toolkit: Deploy Hosted Agent**. The extension opens a **Deploy Hosted Agent** wizard and reads `agent.yaml` to auto-populate settings.
-2. If prompted, complete **Foundry Project Setup** to select subscription and project.
-3. On the **Basics** tab, choose deployment method (**Code** or **Container**) and confirm the agent name.
-4. On **Review + Deploy**, confirm runtime details, pick **CPU and Memory** size, and click **Deploy**.
-5. After deployment, invoke the agent in the Agent Playground and stream live logs from the **Logs** tab.
+This is only for keeping the live demo repeatable; production agents should use an intentional memory management flow.
