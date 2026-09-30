@@ -18,10 +18,6 @@
 
 ## Demos
 
-### Show the local workbench
-
-http://127.0.0.1:8087/
-
 ### Local tool
 
 !! In the Foundry sandbox
@@ -33,6 +29,8 @@ http://127.0.0.1:8087/
 1. Show the code for the tool and additional telemetry.
 
 ### Memory
+
+!! In the local workbench
 
 1. in a new session ask `what are my favourite voices?`, it returns a response saying it doesn't know.
 1. add `My favorite NPC voice is a slow Scottish accent. I use that voice for ancient dwarven blacksmiths.`
