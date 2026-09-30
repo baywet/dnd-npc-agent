@@ -110,8 +110,10 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
                     .. approvalRequiredDoungimTools
                 ]
             },
+#region additional_bug_magic
             ChatHistoryProvider = new PatchedApprovalReplayChatHistoryProvider(),
             DisableApprovalResponseBinding = true,
+#endregion
             AIContextProviders =
             [
                 skillProvider
@@ -126,12 +128,18 @@ AIAgent agent = new AIProjectClient(projectEndpoint, new DefaultAzureCredential(
 var builder = AgentHost.CreateBuilder(args);
 builder.Services
     .AddOpenTelemetry()
-    .WithTracing(tracing => tracing.AddSource(LocalTools.ActivitySourceName));
+    .WithTracing(tracing => tracing
+                        .AddSource(LocalTools.ActivitySourceName)
+                        .AddSource("Azure.AI.AgentServer.Responses"));
+
+#region bug_magic
+// builder.Services.AddFoundryResponses(agent);
 #pragma warning disable MAAI001
 builder.Services.AddFoundryResponses(
     agent,
     new PatchedApprovalReplaySessionStore(new FoundryAgentSessionStore(projectEndpoint, new DefaultAzureCredential())));
 #pragma warning restore MAAI001
+#endregion
 builder.RegisterProtocol("responses", endpoints => endpoints.MapFoundryResponses());
 
 var app = builder.Build();
