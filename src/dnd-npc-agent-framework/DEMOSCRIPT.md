@@ -18,6 +18,14 @@
 
 ## Demos
 
+### Agent definition
+
+!! In the Foundry sandbox
+
+1. Ask `hello what can you do`.
+1. Show the code for the agent definition to set the stage.
+1. Mention the response protocol mapping.
+
 ### Local tool
 
 !! In the Foundry sandbox
@@ -26,7 +34,6 @@
 1. Outline that it called a local tool and didn't ask for approval.
 1. Move over to the traces tab.
 1. Outline the tool call, and the additional span.
-1. Show the code for the agent definition to set the stage.
 1. Show the code for the tool and additional telemetry.
 
 ### MCP demo
