@@ -1,4 +1,23 @@
+# Demonstrations
 
+This document outlines how to get ready for the demos and what to show.
+
+## Required tools
+
+1. dotnet 10
+1. vscode
+1. azd cli
+1. azd cli ai agent extension
+1. az cli
+
+## Environment setup
+
+1. Foundry project
+1. `gpt-5.4-mini` model deployment
+1. `text-embedding-3-large` model deployment
+1. User permission on the resource group for the project (Cognitive services OpenAI user, Foundry User)
+1. Service principal enabled on the foundry project (resources tab on azure portal)
+1. Service principal permission on the resource group for the project (Cognitive services OpenAI user, Foundry User)
 
 ## Getting ready
 
