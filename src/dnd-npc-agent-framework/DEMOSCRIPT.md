@@ -26,7 +26,18 @@
 1. Outline that it called a local tool and didn't ask for approval.
 1. Move over to the traces tab.
 1. Outline the tool call, and the additional span.
+1. Show the code for the agent definition to set the stage.
 1. Show the code for the tool and additional telemetry.
+
+### MCP demo
+
+!! In the local workbench
+
+1. Ask `what's the armor class for a standard goblin?`.
+1. Outline the approval requests, explain why they are important.
+1. Approve the permissions. Show the result.
+1. Outline the source citation link.
+1. Show the code, and the setting approval for the tools, as well as selecting the approved tools.
 
 ### Memory
 
