@@ -39,6 +39,15 @@
 1. Outline the source citation link.
 1. Show the code, and the setting approval for the tools, as well as selecting the approved tools.
 
+### Skill demo
+
+!! In the local workbench
+
+1. Ask `impersonate a standard goblin`.
+1. Ask `you're following a path back to your lair when you suddenly encounter heavily armed adventurers, what do you do?`
+1. Outline the skill card, the approval requests, and the whole workflow being followed.
+1. Outline that MCP is great to get external abilities, tools strictly defined behaviour, and skills for loosely defined behaviour.
+
 ### Memory
 
 !! In the local workbench
