@@ -80,8 +80,8 @@ var skillProvider = new AgentSkillsProvider(
     Path.Combine(AppContext.BaseDirectory, "Skills"),
     options: new AgentSkillsProviderOptions
     {
-        DisableLoadSkillApproval = true,
-        DisableReadSkillResourceApproval = true
+        DisableLoadSkillApproval = false,
+        DisableReadSkillResourceApproval = false
     });
 #endregion
 
