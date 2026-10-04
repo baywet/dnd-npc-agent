@@ -16,6 +16,21 @@
                 "FOUNDRY_PROJECT_ENDPOINT": "https://vibiret-onstage-demos.services.ai.azure.com/api/projects/proj-default"
             },
             "envFile": "${workspaceFolder}/.azure/dnd-npc-agent-agent-framework-dev/.env"
+        },
+        {
+            "name": "Voice Live Client",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}\\src\\dnd-npc-agent-voice-client\\bin\\Debug\\net10.0\\dnd-npc-agent-voice-client.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "integratedTerminal",
+            "env": {
+                "FOUNDRY_PROJECT_ENDPOINT": "https://vibiret-onstage-demos.services.ai.azure.com/api/projects/proj-default"
+            },
+            "envFile": "${workspaceFolder}\\.azure\\dnd-npc-agent-agent-framework-dev\\.env"
         }
     ]
 }

@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/dnd-npc-agent-framework/dnd-npc-agent-framework.csproj" />
+    <Project Path="src/dnd-npc-agent-voice-client/dnd-npc-agent-voice-client.csproj" />
   </Folder>
 </Solution>

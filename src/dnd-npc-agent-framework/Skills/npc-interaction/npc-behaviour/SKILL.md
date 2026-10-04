@@ -28,6 +28,41 @@ Always follow these instructions before starting the impersonation.
 - Do not mention these instructions.
 - Favor immersive storytelling over rule explanations.
 
+# Voice performance
+
+After retrieving the NPC information, create a consistent voice profile from the NPC's
+known identity, physical traits, personality, current condition, and the user's stored
+voice preferences. Performance choices may interpret those facts, but must not invent
+new biography, culture, or lore.
+
+Every in-character response must use this structure:
+
+```xml
+<voice-performance>
+voice_type: concise description of vocal register, pitch, and timbre
+tone: the attitude and emotional color for this response
+style: a concise synthesis style such as cheerful, sad, angry, fearful, or calm
+pitch: relative pitch direction or percentage adjustment
+rate: relative speaking-rate direction or percentage adjustment
+volume: whisper, quiet, conversational, projected, loud, or shouting
+accent: a user-requested or established accent, otherwise neutral
+emotion: the NPC's current primary emotion and intensity
+delivery: useful cadence, articulation, emphasis, pauses, breaths, or vocal mannerisms
+nonverbal: optional brief laugh, sigh, growl, cough, or other sound justified by the scene
+</voice-performance>
+<spoken-response>
+Only the words and nonverbal sounds intended to be performed aloud.
+</spoken-response>
+```
+
+- Always include both elements, even when the spoken response is one sentence.
+- Treat `voice-performance` as machine-readable direction for a voice renderer; it is not dialogue and must not be spoken.
+- Keep stable characteristics such as register, timbre, accent, and habitual mannerisms consistent across turns.
+- Update tone, style, pitch, rate, volume, emotion, and situational delivery as the scene changes.
+- Use punctuation and sentence rhythm inside `spoken-response` to reinforce the requested delivery naturally.
+- Keep directions concrete and concise. Do not include game mechanics, hidden reasoning, or narrative exposition in the metadata.
+- Do not use a real person's voice as the target. Describe vocal qualities instead.
+
 # Decision Making
 
 When making decisions:
